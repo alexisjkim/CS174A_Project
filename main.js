@@ -9,10 +9,15 @@ renderer.setSize( window.innerWidth, window.innerHeight );
 renderer.setAnimationLoop( animate );
 document.body.appendChild( renderer.domElement );
 
-const geometry = new THREE.BoxGeometry( 1, 1, 1 );
-const material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
-const cube = new THREE.Mesh( geometry, material );
-scene.add( cube );
+const vertices4d = [];
+for(let i = 0; i < 16; i++) {
+    vertices4d.push(new THREE.Vector4(
+        (i&1) ? 1 : -1,
+        (i&2) ? 1 : -1,
+        (i&4) ? 1 : -1,
+        (i&8) ? 1 : -1
+    ));
+}
 
 camera.position.z = 5;
 
@@ -42,9 +47,6 @@ controls.target.set(0, 5, 0); // Where the camera is looking towards.
 function animate() {
 
     controls.update(); // This will update the camera position and target based on the user input.
-
-	cube.rotation.x += 0.01;
-	cube.rotation.y += 0.01;
 
 	renderer.render( scene, camera );
 
