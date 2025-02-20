@@ -19,6 +19,13 @@ for(let i = 0; i < 16; i++) {
     ));
 }
 
+const edges4d = [];
+for(let i = 0; i < 15; i++) {
+    for(let j = i+1; j < 16; j++) {
+        if(i^j == 1) edges4d.push([i, j]);
+    }
+}
+
 camera.position.z = 5;
 
 function createAxisLine(color, start, end) {
