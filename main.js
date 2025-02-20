@@ -9,6 +9,49 @@ renderer.setSize( window.innerWidth, window.innerHeight );
 renderer.setAnimationLoop( animate );
 document.body.appendChild( renderer.domElement );
 
+class Vector5 {
+    constructor(x = 0, y = 0, z = 0, w = 0, v = 0) {
+        this.x = x;
+        this.y = y;
+        this.z = z;
+        this.w = w;
+        this.v = v;
+    }
+
+    set(x, y, z, w, v) {
+        this.x = x;
+        this.y = y;
+        this.z = z;
+        this.w = w;
+        this.v = v;
+        return this;
+    }
+
+    log() {
+        console.log(`Vector5(${this.x}, ${this.y}, ${this.z}, ${this.w}, ${this.v})`);
+    }
+}
+
+class Matrix5 {
+    constructor() {
+        this.elements = new Float32Array(25).fill(0); // Initialize with zeros
+    }
+
+    set(row, col, value) {
+        this.elements[row * 5 + col] = value;
+    }
+
+    get(row, col) {
+        return this.elements[row * 5 + col];
+    }
+
+    log() {
+        for (let i = 0; i < 5; i++) {
+            console.log(this.elements.slice(i * 5, i * 5 + 5));
+        }
+    }
+}
+
 const vertices4d = [];
 for(let i = 0; i < 16; i++) {
     vertices4d.push(new THREE.Vector4(
