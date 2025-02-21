@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
@@ -8,6 +8,23 @@ const renderer = new THREE.WebGLRenderer();
 renderer.setSize( window.innerWidth, window.innerHeight );
 renderer.setAnimationLoop( animate );
 document.body.appendChild( renderer.domElement );
+
+// Setting up the lights
+const pointLight = new THREE.PointLight(0xffffff, 100, 100);
+pointLight.position.set(5, 5, 5); // Position the light
+scene.add(pointLight);
+
+const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+directionalLight.position.set(0.5, .0, 1.0).normalize();
+scene.add(directionalLight);
+
+const ambientLight = new THREE.AmbientLight(0x505050);  // Soft white light
+scene.add(ambientLight);
+
+const phong_material = new THREE.MeshPhongMaterial({
+    color: 0x00ff00, // Green color
+    shininess: 100   // Shininess of the material
+});
 
 class Vector5 {
     constructor(x = 0, y = 0, z = 0, w = 0, v = 0) {
@@ -64,6 +81,7 @@ class Matrix5 {
     let transformedVector = new THREE.Vector4().subVectors(vector4D, cameraPosition4D);
     let inverseCameraBasis = new THREE.Matrix4().copy(cameraBasis4D).invert();
     transformedVector.applyMatrix4(inverseCameraBasis);
+    let projectedVector;
 
     // project to 3d, with perspective or orthographic projection
     let { x, y, z, w } = transformedVector;
@@ -90,14 +108,45 @@ for(let i = 0; i < 16; i++) {
     ));
 }
 
-const edges4d = [];
-for(let i = 0; i < 15; i++) {
-    for(let j = i+1; j < 16; j++) {
-        if(i^j == 1) edges4d.push([i, j]);
-    }
-}
+const edges3d = [
+    [0, 1],
+    [0, 2],
+    [0, 4],
+    [0, 8],
+    [1, 3],
+    [1, 5],
+    [1, 9],
+    [2, 3],
+    [2, 6],
+    [2, 10],
+    [3, 7],
+    [3, 11],
+    [4, 5],
+    [4, 6],
+    [4, 12],
+    [5, 7],
+    [5, 13],
+    [6, 7],
+    [6, 14],
+    [7, 15],
+    [8, 9],
+    [8, 10],
+    [8, 12],
+    [9, 11],
+    [9, 13],
+    [10, 11],
+    [10, 14],
+    [11, 15],
+    [12, 13],
+    [12, 14],
+    [13, 15],
+    [14, 15]
+];
 
-camera.position.z = 5;
+console.log("vertices before projection: ", vertices4d);
+console.log("edges before projection: ", edges3d);
+
+//camera.position.z = 2;
 
 function createAxisLine(color, start, end) {
     const geometry = new THREE.BufferGeometry().setFromPoints([start, end]);
@@ -119,10 +168,14 @@ for (let i = 0; i < vertices4d.length; i++) {
     vertices3d.push(project4DTo3D(vertices4d[i], cameraPosition4D, cameraBasis4D, d, true))
 }
 
-const edges3d = [];
-for (let i = 0; i < vertices4d.length; i++) {
-    edges3d.push(project4DTo3D(edges4d[i], cameraPosition4D, cameraBasis4D, d, true))
-}
+// const edges3d = [];
+// for (let i = 0; i < vertices4d.length; i++) {
+//     edges3d.push(project4DTo3D(edges4d[i], cameraPosition4D, cameraBasis4D, d, true))
+// }
+
+console.log("vertices after projection: ", vertices3d);
+console.log("edges after projection: ", edges3d);
+
 
 // Create axis lines
 const xAxis = createAxisLine(0xff0000, new THREE.Vector3(0, 0, 0), new THREE.Vector3(5, 0, 0)); // Red
@@ -133,6 +186,31 @@ const zAxis = createAxisLine(0x0000ff, new THREE.Vector3(0, 0, 0), new THREE.Vec
 scene.add(xAxis);
 scene.add(yAxis);
 scene.add(zAxis);
+
+
+// add shape to scene
+const x = new Float32Array();
+for (let i = 0; i < x.length; i++) {
+    for (let j = 0; j < 3; j++) {
+        x.push(vertices3d[i][j]);
+    }
+}
+
+const positions = [];
+edges3d.forEach(edge => {
+    const vertexA = vertices3d[edge[0]];
+    const vertexB = vertices3d[edge[1]];
+
+    positions.push(vertexA.x, vertexA.y, vertexA.z);
+    positions.push(vertexB.x, vertexB.y, vertexB.z);
+});
+
+const wireframe_geometry = new THREE.BufferGeometry();
+wireframe_geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(positions), 3));
+
+let tesseract = new THREE.LineSegments(wireframe_geometry, phong_material);
+tesseract.matrixAutoUpdate = false;
+scene.add(tesseract);
 
 
 // Change camera position
