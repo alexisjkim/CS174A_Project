@@ -116,6 +116,7 @@ scene.add(tesseract);
 /* ANIMATION PARAMETERS */
 
 let isPaused = false;
+let usePerspective = true;
 let animation_time = 0;
 let delta_animation_time;
 const period = 4; // number of seconds for the shape to make a full rotation
@@ -133,7 +134,7 @@ function animate() {
         // Project the rotated 4D vertices to 3D
         const vertices3d = [];
         for (let i = 0; i < vertices4d.length; i++) {
-            vertices3d.push(project4DTo3D(vertices4d_rotated[i], cameraPosition4D, cameraBasis4D, d, true));
+            vertices3d.push(project4DTo3D(vertices4d_rotated[i], cameraPosition4D, cameraBasis4D, d, usePerspective));
         }
 
         // Update wireframe geometry
@@ -165,11 +166,16 @@ function toggleAnimation() {
         clock.stop(); // Stop updating delta time
     }
 }
+function togglePerspective() {
+    usePerspective = !usePerspective;
+}
 
 
 document.addEventListener("keydown", (event) => {
     // pause on spacebar
     if (event.code === "Space") {
         toggleAnimation();
+    } if (event.key === 'p' || event.key === 'P') {
+        togglePerspective();
     }
 });
