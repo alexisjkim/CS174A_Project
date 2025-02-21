@@ -189,6 +189,27 @@ const edges = [
 console.log("vertices before projection: ", vertices4d);
 
 
+/* Rotate the shape */
+
+// Given a matrix of 4d vectors, rotate each one around the ZW axis by theta radians
+function rotateZW(vertices, theta) {
+    const cosT = Math.cos(theta);
+    const sinT = Math.sin(theta);
+    
+    return vertices.map(v => {
+        const x = v.x;
+        const y = v.y;
+        const z = v.z * cosT - v.w * sinT;
+        const w = v.z * sinT + v.w * cosT;
+        
+        return new THREE.Vector4(x, y, z, w);
+    });
+}
+
+
+let vertices4d_rotated = rotateZW(vertices4d, 2);
+
+
 /* Project the 4d vertices to 3d */
 
 let cameraPosition4D = new THREE.Vector4(0, 0, 0, 5); // Camera in 4d space, at w = 5
@@ -197,7 +218,7 @@ let d = 1; // depth factor
 
 const vertices3d = [];
 for (let i = 0; i < vertices4d.length; i++) {
-    vertices3d.push(project4DTo3D(vertices4d[i], cameraPosition4D, cameraBasis4D, d, true))
+    vertices3d.push(project4DTo3D(vertices4d_rotated[i], cameraPosition4D, cameraBasis4D, d, true));
 }
 
 console.log("vertices after projection: ", vertices3d);
@@ -230,9 +251,21 @@ let tesseract = new THREE.LineSegments(wireframe_geometry, lineMaterial);
 tesseract.matrixAutoUpdate = false;
 scene.add(tesseract);
 
+
+/* Constants for making animation */
+let animation_time = 0;
+let delta_animation_time;
+const period = 2; // number of seconds for the shape to make a full rotation
+const clock = new THREE.Clock();
+
 	
 
 function animate() {
+
+    delta_animation_time = clock.getDelta();
+    animation_time += delta_animation_time;
+
+    let rotation_angle = (2 * Math.PI / period) * animation_time;
 
     controls.update(); // This will update the camera position and target based on the user input.
 
