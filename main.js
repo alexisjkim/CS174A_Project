@@ -137,7 +137,7 @@ class Matrix5 {
 
 /* Generate vertices for a 4d cube */
 
-let l = 20; // side length of tesseract
+let l = 2; // side length of tesseract
 
 const vertices4d = [];
 for(let i = 0; i < 16; i++) {
@@ -255,7 +255,7 @@ scene.add(tesseract);
 /* Constants for making animation */
 let animation_time = 0;
 let delta_animation_time;
-const period = 2; // number of seconds for the shape to make a full rotation
+const period = 4; // number of seconds for the shape to make a full rotation
 const clock = new THREE.Clock();
 
 	
@@ -266,6 +266,27 @@ function animate() {
     animation_time += delta_animation_time;
 
     let rotation_angle = (2 * Math.PI / period) * animation_time;
+
+    let vertices4d_rotated = rotateZW(vertices4d, rotation_angle);
+
+    // Project the rotated 4D vertices to 3D
+    const vertices3d = [];
+    for (let i = 0; i < vertices4d.length; i++) {
+        vertices3d.push(project4DTo3D(vertices4d_rotated[i], cameraPosition4D, cameraBasis4D, d, true));
+    }
+
+    // Update wireframe geometry
+    const positions = [];
+    edges.forEach(edge => {
+        const vertexA = vertices3d[edge[0]];
+        const vertexB = vertices3d[edge[1]];
+
+        positions.push(vertexA.x, vertexA.y, vertexA.z);
+        positions.push(vertexB.x, vertexB.y, vertexB.z);
+    });
+
+    wireframe_geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(positions), 3));
+    wireframe_geometry.attributes.position.needsUpdate = true; // Ensure update
 
     controls.update(); // This will update the camera position and target based on the user input.
 
