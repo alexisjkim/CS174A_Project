@@ -4,7 +4,6 @@ import { project4DTo3D, rotateZW } from './utils';
 /** Tesseract
  * 
  * Tesseract(l, d, lineMaterial, cameraPosition4D, cameraBasis4D) constructs the tesseract object.
- * getGeometry() to get geometry of the tesseract.
  * updateGeometry(rotation_angle, use_perspective) to update position of tesseract.
  */
 export default class Tesseract {
@@ -61,12 +60,8 @@ export default class Tesseract {
         this.tesseract_geometry.matrixAutoUpdate = false;
     }
 
-    getGeometry () {
-        return this.tesseract_geometry;
-    }
-
     updateTesseract(rotation_angle, use_perspective) {
-        let vertices4d_rotated = rotateZW(this.vertices4d, rotation_angle);
+        let vertices4d_rotated = this.vertices4d.map(v => rotateZW(v, rotation_angle));
     
         // Project the rotated 4D vertices to 3D
         const vertices3d = [];

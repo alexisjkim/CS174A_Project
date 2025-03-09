@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import { createAxisLine } from './utils';
+import { project4DTo3D, createAxisLine, rotateZW } from './utils';
 import Tesseract from './tesseract';
 
 /* Set up the scene */ 
@@ -33,7 +33,12 @@ scene.add(directionalLight);
 const ambientLight = new THREE.AmbientLight(0x505050);  // Soft white light
 scene.add(ambientLight);
 
-
+// material for wireframe
+const lineMaterial = new THREE.LineBasicMaterial({
+    color: 0x00ff00,  // Green color
+    linewidth: 5,     // Set the thickness of the lines (adjust as needed)
+    linejoin: 'round'
+});
 
 /* Add x, y, z axes to the scene */
 
@@ -47,22 +52,19 @@ scene.add(zAxis);
 
 /* Create Tesseract */
 
-const lineMaterial = new THREE.LineBasicMaterial({
-    color: 0x00ff00,  // Green color
-    linewidth: 5,     // Set the thickness of the lines (adjust as needed)
-    linejoin: 'round'
-});
+const l = 2;
+const d = 1;
 let cameraPosition4D = new THREE.Vector4(0, 0, 0, 5);
 let cameraBasis4D = new THREE.Matrix4().identity();
 
 const tesseract = new Tesseract(
-    2, // line length
-    1, // depth factor?
+    l,
+    d,
     lineMaterial,
     cameraPosition4D,
     cameraBasis4D
 )
-scene.add(tesseract.getGeometry());
+scene.add(tesseract.tesseract_geometry);
 
 /* Create mouse */
 
@@ -71,7 +73,6 @@ const mouse_material = new THREE.MeshBasicMaterial({ color: 'red' });
 const mouse = new THREE.Mesh(mouse_geometry, mouse_material);
 
 /* Set mouse position */
-
 let mouse_position4d = new THREE.Vector4(l,l,l,l);
 let mouse_position3d = project4DTo3D(mouse_position4d, cameraPosition4D, cameraBasis4D, d, true);
 mouse.position.set(...mouse_position3d);
@@ -96,8 +97,8 @@ function animate() {
         let rotation_angle = (2 * Math.PI / period) * animation_time;
         tesseract.updateTesseract(rotation_angle, use_perspective);
 
-        let mouse4d_rotated = rotateZW_mouse(mouse_position4d, rotation_angle);
-        mouse_position3d = project4DTo3D(mouse4d_rotated, cameraPosition4D, cameraBasis4D, d, usePerspective);
+        let mouse4d_rotated = rotateZW(mouse_position4d, rotation_angle);
+        mouse_position3d = project4DTo3D(mouse4d_rotated, cameraPosition4D, cameraBasis4D, d, use_perspective);
         mouse.position.set(...mouse_position3d);
     }
 

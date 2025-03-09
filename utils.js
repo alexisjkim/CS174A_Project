@@ -60,22 +60,8 @@ function createCameraBasis4d(cameraPosition4D) {
 
 
 // Given a matrix of 4d vectors, rotate each one around the ZW axis by theta radians
-function rotateZW(vertices, theta) {
-    const cosT = Math.cos(theta);
-    const sinT = Math.sin(theta);
-    
-    return vertices.map(v => {
-        const x = v.x;
-        const y = v.y;
-        const z = v.z * cosT - v.w * sinT;
-        const w = v.z * sinT + v.w * cosT;
-        
-        return new THREE.Vector4(x, y, z, w);
-    });
-}
 
-
-function rotateZW_mouse(v, theta) {
+function rotateZW(v, theta) {
     const cosT = Math.cos(theta);
     const sinT = Math.sin(theta);
 
@@ -133,4 +119,4 @@ class Matrix5 {
 }
 
 
-export { createAxisLine, createCameraBasis4d, project4DTo3D, rotateZW, rotateZW_mouse, Vector5, Matrix5 };
+export { createAxisLine, createCameraBasis4d, project4DTo3D, rotateZW, Vector5, Matrix5 };
