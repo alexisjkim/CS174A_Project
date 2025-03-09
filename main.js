@@ -2,6 +2,8 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { project4DTo3D, createAxisLine, rotateZW } from './utils';
 import Tesseract from './tesseract';
+import Cheese from './cheese';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
 /* Set up the scene */ 
 
@@ -83,6 +85,10 @@ let mouse_position3d = project4DTo3D(mouse_position4d, cameraPosition4D, cameraB
 mouse.position.set(...mouse_position3d);
 console.log(mouse_position3d);
 scene.add(mouse);
+
+
+/* Create cheese */
+const cheese = new Cheese(scene, l, d, cameraPosition4D, cameraBasis4D);
 
 /* ANIMATION PARAMETERS */
 
