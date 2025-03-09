@@ -44,15 +44,16 @@ function createCameraBasis4d(cameraPosition4D) {
 
     // project to 3d, with perspective or orthographic projection
     let { x, y, z, w } = transformedVector;
+    let scaleFactor;
     if (perspective) {
         // perspective projection: x', y', z' = x/w, y/w, z/w
-        let scaleFactor = w/d;
-        if (scaleFactor === 0) scaleFactor = 1e-6; // no div by zero
-        projectedVector = new THREE.Vector3(x / scaleFactor, y / scaleFactor, z / scaleFactor);
+        scaleFactor = w/d;
     } else {
-        // orthographic projection = drop the w-coordinate
-        projectedVector = new THREE.Vector3(x, y, z);
+        // orthographic projection: divide by camera distance
+        scaleFactor = cameraPosition4D.w;
     }
+    if (scaleFactor === 0) scaleFactor = 1e-6; // no div by zero
+    projectedVector = new THREE.Vector3(x / scaleFactor, y / scaleFactor, z / scaleFactor);
 
     return projectedVector;
 }
