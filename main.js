@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import { createAxisLine, project4DTo3D, rotateZW } from './utils';
+import { createAxisLine, project4DTo3D, rotateZW, rotateZW_mouse } from './utils';
+import { cameraPosition } from 'three/tsl';
 
 
 /* Set up the scene */ 
@@ -90,10 +91,6 @@ for (let i = 0; i < vertices4d.length; i++) {
     vertices3d.push(project4DTo3D(vertices4d[i], cameraPosition4D, cameraBasis4D, d, true));
 }
 
-console.log("vertices after projection: ", vertices3d);
-console.log("edges", edges);
-
-
 
 /* Add the hypercube to the scene */
 
@@ -113,6 +110,20 @@ let tesseract = new THREE.LineSegments(wireframe_geometry, lineMaterial);
 tesseract.matrixAutoUpdate = false;
 scene.add(tesseract);
 
+/* Create mouse */
+
+const mouse_geometry = new THREE.SphereGeometry(0.1, 32, 32);
+const mouse_material = new THREE.MeshBasicMaterial({ color: 'red' });
+const mouse = new THREE.Mesh(mouse_geometry, mouse_material);
+
+/* Set mouse position */
+
+let mouse_position4d = new THREE.Vector4(l,l,l,l);
+let mouse_position3d = project4DTo3D(mouse_position4d, cameraPosition4D, cameraBasis4D, d, true);
+mouse.position.set(...mouse_position3d);
+console.log(mouse_position3d);
+scene.add(mouse);
+
 /* ANIMATION PARAMETERS */
 
 let isPaused = false;
@@ -130,12 +141,15 @@ function animate() {
 
         let rotation_angle = (2 * Math.PI / period) * animation_time;
         let vertices4d_rotated = rotateZW(vertices4d, rotation_angle);
+        let mouse4d_rotated = rotateZW_mouse(mouse_position4d, rotation_angle);
 
         // Project the rotated 4D vertices to 3D
         const vertices3d = [];
         for (let i = 0; i < vertices4d.length; i++) {
             vertices3d.push(project4DTo3D(vertices4d_rotated[i], cameraPosition4D, cameraBasis4D, d, usePerspective));
         }
+
+        mouse_position3d = project4DTo3D(mouse4d_rotated, cameraPosition4D, cameraBasis4D, d, usePerspective);
 
         // Update wireframe geometry
         const positions = [];
@@ -149,6 +163,7 @@ function animate() {
 
         wireframe_geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(positions), 3));
         wireframe_geometry.attributes.position.needsUpdate = true; // Ensure update
+        mouse.position.set(...mouse_position3d);
     }
 
     controls.update(); // This will update the camera position and target based on the user input.

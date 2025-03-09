@@ -74,6 +74,19 @@ function rotateZW(vertices, theta) {
 }
 
 
+function rotateZW_mouse(v, theta) {
+    const cosT = Math.cos(theta);
+    const sinT = Math.sin(theta);
+
+    const x = v.x;
+    const y = v.y;
+    const z = v.z * cosT - v.w * sinT;
+    const w = v.z * sinT + v.w * cosT;
+    
+    return new THREE.Vector4(x, y, z, w);
+}
+
+
 // Classes for 5d vector and 5d matrix; useful for homogeneous representation of 4d objects
 class Vector5 {
     constructor(x = 0, y = 0, z = 0, w = 0, v = 0) {
@@ -119,4 +132,4 @@ class Matrix5 {
 }
 
 
-export { createAxisLine, createCameraBasis4d, project4DTo3D, rotateZW, Vector5, Matrix5 };
+export { createAxisLine, createCameraBasis4d, project4DTo3D, rotateZW, rotateZW_mouse, Vector5, Matrix5 };
