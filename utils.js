@@ -44,15 +44,16 @@ function createCameraBasis4d(cameraPosition4D) {
 
     // project to 3d, with perspective or orthographic projection
     let { x, y, z, w } = transformedVector;
+    let scaleFactor;
     if (perspective) {
         // perspective projection: x', y', z' = x/w, y/w, z/w
-        let scaleFactor = w/d;
-        if (scaleFactor === 0) scaleFactor = 1e-6; // no div by zero
-        projectedVector = new THREE.Vector3(x / scaleFactor, y / scaleFactor, z / scaleFactor);
+        scaleFactor = w/d;
     } else {
-        // orthographic projection = drop the w-coordinate
-        projectedVector = new THREE.Vector3(x, y, z);
+        // orthographic projection: divide by camera distance
+        scaleFactor = cameraPosition4D.w;
     }
+    if (scaleFactor === 0) scaleFactor = 1e-6; // no div by zero
+    projectedVector = new THREE.Vector3(x / scaleFactor, y / scaleFactor, z / scaleFactor);
 
     return projectedVector;
 }
@@ -71,6 +72,19 @@ function rotateZW(vertices, theta) {
         
         return new THREE.Vector4(x, y, z, w);
     });
+}
+
+
+function rotateZW_mouse(v, theta) {
+    const cosT = Math.cos(theta);
+    const sinT = Math.sin(theta);
+
+    const x = v.x;
+    const y = v.y;
+    const z = v.z * cosT - v.w * sinT;
+    const w = v.z * sinT + v.w * cosT;
+    
+    return new THREE.Vector4(x, y, z, w);
 }
 
 
@@ -119,4 +133,4 @@ class Matrix5 {
 }
 
 
-export { createAxisLine, createCameraBasis4d, project4DTo3D, rotateZW, Vector5, Matrix5 };
+export { createAxisLine, createCameraBasis4d, project4DTo3D, rotateZW, rotateZW_mouse, Vector5, Matrix5 };

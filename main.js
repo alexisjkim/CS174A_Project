@@ -64,6 +64,20 @@ const tesseract = new Tesseract(
 )
 scene.add(tesseract.getGeometry());
 
+/* Create mouse */
+
+const mouse_geometry = new THREE.SphereGeometry(0.1, 32, 32);
+const mouse_material = new THREE.MeshBasicMaterial({ color: 'red' });
+const mouse = new THREE.Mesh(mouse_geometry, mouse_material);
+
+/* Set mouse position */
+
+let mouse_position4d = new THREE.Vector4(l,l,l,l);
+let mouse_position3d = project4DTo3D(mouse_position4d, cameraPosition4D, cameraBasis4D, d, true);
+mouse.position.set(...mouse_position3d);
+console.log(mouse_position3d);
+scene.add(mouse);
+
 /* ANIMATION PARAMETERS */
 
 let is_paused = false;
@@ -81,6 +95,10 @@ function animate() {
 
         let rotation_angle = (2 * Math.PI / period) * animation_time;
         tesseract.updateTesseract(rotation_angle, use_perspective);
+
+        let mouse4d_rotated = rotateZW_mouse(mouse_position4d, rotation_angle);
+        mouse_position3d = project4DTo3D(mouse4d_rotated, cameraPosition4D, cameraBasis4D, d, usePerspective);
+        mouse.position.set(...mouse_position3d);
     }
 
     controls.update(); // This will update the camera position and target based on the user input.
