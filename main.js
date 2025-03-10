@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import { createAxisLine } from './utils';
+import { project4DTo3D, createAxisLine, rotateZW, updateCylinder } from './utils';
 import Tesseract from './tesseract';
 import Cheese from './cheese';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
@@ -21,6 +21,7 @@ document.body.appendChild( renderer.domElement );
 const controls = new OrbitControls(camera3D, renderer.domElement);
 camera3D.position.set(0, 2, 10); // Where the camera is.
 controls.target.set(0, 5, 0); // Where the camera is looking towards.
+let mousePov = false; // true if you are looking from the mouse pov; false if birds eye view
 
 /* Set up lights */
 
@@ -87,10 +88,34 @@ scene.add(tesseract.wireframe);
 /* Create mouse */
 const mouse = new Mouse(new THREE.Vector4(length,length,length,length), length, camera4D, 1);
 
+
 /* Set mouse position */
 
 scene.add(mouse.mesh);
 
+
+/* Create non-spherical mouse */
+const loader = new GLTFLoader();
+let mouse2;
+let mouseMixer;
+
+loader.load(
+    'models/mouse.glb',
+    function (gltf) {
+        mouse2 = gltf.scene;
+        mouse2.position.set(1, 1, 1);
+        mouse2.scale.set(1, 1, 1);
+        scene.add(mouse2);
+
+        mouseMixer = new THREE.AnimationMixer(mouse2);
+
+        // Play an animation
+        if (gltf.animations.length > 0) {
+            let action = mouseMixer.clipAction(gltf.animations[1]); // Play first animation
+            action.play();
+        }
+    }
+);
 
 /* Create cheese */
 const cheese = new Cheese(scene, length, camera4D);
@@ -134,6 +159,16 @@ function toggleAnimation() {
     }
 }
 
+function toggleMousePov() {
+    if (mousePov) {
+        camera.position.lerp(mouse.position, 0.03);
+    }
+    else {
+        camera.position.lerp(new THREE.Vector3(0, 2, 10), 0.03);
+        camera.lookAt(0, 5, 0);
+    }
+}
+
 document.addEventListener("keydown", (event) => {
     // pause on spacebar
     if (event.code === "Space") {
@@ -146,5 +181,8 @@ document.addEventListener("keydown", (event) => {
         mouse.toggleWalking();
     } if (event.key === 'v') {
         tesseract.toggleVisibility();
+    }
+    if (event.key == 'e') {
+        mousePov = !mousePov;
     }
 });
