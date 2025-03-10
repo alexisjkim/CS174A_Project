@@ -5,11 +5,11 @@ import Tesseract from './tesseract';
 import Cheese from './cheese';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import Mouse from './mouse';
+import Camera from './camera';
 
 /* Set up the scene */ 
 
 const scene = new THREE.Scene();
-const camera3D = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
 
 const renderer = new THREE.WebGLRenderer();
 renderer.setSize( window.innerWidth, window.innerHeight );
@@ -17,11 +17,6 @@ renderer.setAnimationLoop( animate );
 document.body.appendChild( renderer.domElement );
 
 /* Change camera position */
-
-const controls = new OrbitControls(camera3D, renderer.domElement);
-camera3D.position.set(0, 2, 10); // Where the camera is.
-controls.target.set(0, 5, 0); // Where the camera is looking towards.
-let mousePov = false; // true if you are looking from the mouse pov; false if birds eye view
 
 /* Set up lights */
 
@@ -48,18 +43,18 @@ scene.add(zAxis);
 
 /* Set 4D Camera */
 
-class Camera4D {
-    constructor(depth = 1, perspective = true) {
-        this.position = new THREE.Vector4(0, 0, 0, 5);
-        this.basis = new THREE.Matrix4().identity();
-        this.depth = depth;
-        this.perspective = perspective;
-    }
-    togglePerspective() {
-        this.perspective = !this.perspective;
-    }
-}
-let camera4D = new Camera4D();
+// class Camera4D {
+//     constructor(depth = 1, perspective = true) {
+//         this.position = new THREE.Vector4(0, 0, 0, 5);
+//         this.basis = new THREE.Matrix4().identity();
+//         this.depth = depth;
+//         this.perspective = perspective;
+//     }
+//     togglePerspective() {
+//         this.perspective = !this.perspective;
+//     }
+// }
+let camera = new Camera(renderer);
 
 /* Set Up Tesseract */
 
@@ -77,7 +72,7 @@ const meshParams = {
 }
 const tesseract = new Tesseract(
     length,
-    camera4D,
+    camera,
     meshParams,
     wireframeMaterial
 )
@@ -86,11 +81,11 @@ scene.add(tesseract.mesh);
 scene.add(tesseract.wireframe);
 
 /* Create mouse */
-const mouse = new Mouse(new THREE.Vector4(length,length,length,length), length, camera4D, 1);
+const mouse = new Mouse(new THREE.Vector4(length,length,length,length), length, camera, 1);
 scene.add(mouse.mesh);
 
 /* Create cheese */
-// const cheese = new Cheese(scene, length, camera4D);
+// const cheese = new Cheese(scene, length, camera);
 
 /* ANIMATION PARAMETERS */
 let isPaused = false;
@@ -115,9 +110,10 @@ function animate() {
         mouse.update(rotationAngle, timeDelta);
     }
 
-    controls.update(); // This will update the camera position and target based on the user input.
+    camera.update(mouse.mesh.position);
+    camera.controls3D.update(); // This will update the camera position and target based on the user input.
 
-	renderer.render( scene,  camera3D );
+	renderer.render( scene,  camera.camera3D );
 
 }
 
@@ -132,26 +128,26 @@ function toggleAnimation() {
 }
 
 // TODO: probably does not work rn. needs to be done inside animate (?)
-function toggleMousePov() {
+// function toggleMousePov() {
 
-    mousePov = !mousePov;
+//     mousePov = !mousePov;
 
-    if (mousePov) {
-        console.log("going to mouse pov");
-        camera3D.position.lerp(mouse.mesh.position, 0.03);
-    }
-    else {
-        camera3D.position.lerp(new THREE.Vector3(0, 2, 10), 0.03);
-        camera3D.lookAt(0, 5, 0);
-    }
-}
+//     if (mousePov) {
+//         console.log("going to mouse pov");
+//         camera.camera3D.position.lerp(mouse.mesh.position, 0.03);
+//     }
+//     else {
+//         camera.camera3D.position.lerp(new THREE.Vector3(0, 2, 10), 0.03);
+//         camera.camera3D.lookAt(0, 5, 0);
+//     }
+// }
 
 document.addEventListener("keydown", (event) => {
     // pause on spacebar
     if (event.code === "Space") {
         toggleAnimation();
     } if (event.key === 'p' || event.key === 'P') {
-        camera4D.togglePerspective();
+        camera.togglePerspective();
     } if (event.code === "ArrowRight") {
         mouse.switchEdge();
     } if (event.key === "Enter") {
@@ -159,6 +155,6 @@ document.addEventListener("keydown", (event) => {
     } if (event.key === 'v') {
         tesseract.toggleVisibility();
     } if (event.key === 'e') {
-        toggleMousePov();
+        camera.toggleMousePov();
     }
 });

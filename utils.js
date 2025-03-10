@@ -35,22 +35,22 @@ function createCameraBasis4d(cameraPosition4D) {
   * d: depth factor (only perspective projection)
   * perspective: use perspective or orthographic projection
   */
- function project4DTo3D (vector4D, camera4D) {
+ function project4DTo3D (vector4D, camera) {
     // transform 4d vector by subtracting camera position and multiplying by the inverse of the cameraBasis
-    let transformedVector = new THREE.Vector4().subVectors(vector4D, camera4D.position);
-    let inverseCameraBasis = new THREE.Matrix4().copy(camera4D.basis).invert();
+    let transformedVector = new THREE.Vector4().subVectors(vector4D, camera.position4D);
+    let inverseCameraBasis = new THREE.Matrix4().copy(camera.basis4D).invert();
     transformedVector.applyMatrix4(inverseCameraBasis);
     let projectedVector;
 
     // project to 3d, with perspective or orthographic projection
     let { x, y, z, w } = transformedVector;
     let scaleFactor;
-    if (camera4D.perspective) {
+    if (camera.usePerspective4D) {
         // perspective projection: x', y', z' = x/w, y/w, z/w
-        scaleFactor = w/camera4D.depth;
+        scaleFactor = w/camera.depth4D;
     } else {
         // orthographic projection: divide by camera distance
-        scaleFactor = camera4D.position.w;
+        scaleFactor = camera.position4D.w;
     }
     if (scaleFactor === 0) scaleFactor = 1e-6; // no div by zero
     projectedVector = new THREE.Vector3(x / scaleFactor, y / scaleFactor, z / scaleFactor);
