@@ -58,15 +58,25 @@ const l = 2;
 const d = 1;
 let cameraPosition4D = new THREE.Vector4(0, 0, 0, 5);
 let cameraBasis4D = new THREE.Matrix4().identity();
+let mesh_visibility = true;
 
 const tesseract = new Tesseract(
     l,
     d,
     lineMaterial,
     cameraPosition4D,
-    cameraBasis4D
+    cameraBasis4D,
+    0.05,
+    new THREE.Color(0x85f73e),
+    0.08,
+    new THREE.Color(0x881bb3),
 )
-scene.add(tesseract.tesseract_geometry);
+
+tesseract.setMeshVisibility(mesh_visibility);
+tesseract.setWireframeVisibility(!mesh_visibility);
+
+scene.add(tesseract.mesh);
+scene.add(tesseract.wireframe);
 
 /* Create mouse */
 
@@ -168,5 +178,9 @@ document.addEventListener("keydown", (event) => {
         switchEdge();
     } if (event.key === "Enter") {
         walk();
+    } if (event.key === 'v') {
+        mesh_visibility = !mesh_visibility;
+        tesseract.setMeshVisibility(mesh_visibility);
+        tesseract.setWireframeVisibility(!mesh_visibility);
     }
 });

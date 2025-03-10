@@ -73,50 +73,50 @@ function rotateZW(v, theta) {
     return new THREE.Vector4(x, y, z, w);
 }
 
+// create cylinder along an edge
+function createCylinder(start, end, radius, color) {
+    const direction = new THREE.Vector3().subVectors(end, start);
+    const length = direction.length();
+    
+    // Create a cylinder along the Y-axis
+    const geometry = new THREE.CylinderGeometry(radius, radius, length, 16);
+    const material = new THREE.MeshStandardMaterial({ color: color });
+    const cylinder = new THREE.Mesh(geometry, material);
 
-// Classes for 5d vector and 5d matrix; useful for homogeneous representation of 4d objects
-class Vector5 {
-    constructor(x = 0, y = 0, z = 0, w = 0, v = 0) {
-        this.x = x;
-        this.y = y;
-        this.z = z;
-        this.w = w;
-        this.v = v;
-    }
+    // Position the cylinder at the midpoint
+    const midpoint = new THREE.Vector3().addVectors(start, end).multiplyScalar(0.5);
+    cylinder.position.copy(midpoint);
 
-    set(x, y, z, w, v) {
-        this.x = x;
-        this.y = y;
-        this.z = z;
-        this.w = w;
-        this.v = v;
-        return this;
-    }
+    // Align the cylinder with the edge direction
+    cylinder.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction.clone().normalize());
 
-    log() {
-        console.log(`Vector5(${this.x}, ${this.y}, ${this.z}, ${this.w}, ${this.v})`);
-    }
+    return cylinder;
 }
 
-class Matrix5 {
-    constructor() {
-        this.elements = new Float32Array(25).fill(0); // Initialize with zeros
-    }
+function updateCylinder(cylinder, start, end) {
+    const direction = new THREE.Vector3().subVectors(end, start);
+    const length = direction.length();
+    
+    // Update position
+    const midpoint = new THREE.Vector3().addVectors(start, end).multiplyScalar(0.5);
+    cylinder.position.copy(midpoint);
 
-    set(row, col, value) {
-        this.elements[row * 5 + col] = value;
-    }
+    // Update rotation
+    cylinder.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction.clone().normalize());
 
-    get(row, col) {
-        return this.elements[row * 5 + col];
-    }
+    // Update scale
+    cylinder.scale.set(1, length / cylinder.geometry.parameters.height, 1);
+}
 
-    log() {
-        for (let i = 0; i < 5; i++) {
-            console.log(this.elements.slice(i * 5, i * 5 + 5));
-        }
-    }
+// create a sphere at a position
+function createSphere(position, radius, color) {
+    const geometry = new THREE.SphereGeometry(radius, 16, 16);
+    const material = new THREE.MeshStandardMaterial({ color: color });
+    const sphere = new THREE.Mesh(geometry, material);
+    
+    sphere.position.set(...position);
+    return sphere;
 }
 
 
-export { createAxisLine, createCameraBasis4d, project4DTo3D, rotateZW, Vector5, Matrix5 };
+export { createAxisLine, createCameraBasis4d, project4DTo3D, rotateZW, createCylinder, updateCylinder, createSphere };
