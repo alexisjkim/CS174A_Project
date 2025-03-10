@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { project4DTo3D, rotateZW } from './utils';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
 export default class Mouse {
     constructor(startPosition, edgeLength, camera, speed = 1) {
@@ -18,11 +19,33 @@ export default class Mouse {
         
         let position3D = project4DTo3D(this.position, this.camera);
         this.mesh.position.set(...position3D);
-        console.log(position3D);
+        console.log("sphere position: ", this.mesh.position);
+
+        this.mouseMixer = null;
+        this.model = null;
+
+        const loader = new GLTFLoader();
+        loader.load('models/mouse.glb', (gltf) => {
+            this.model = gltf.scene;
+            this.model.scale.set(0.2, 0.2, 0.2); // adjust size of the mouse
+            this.model.position.set(0, 0, 0); // this sets the position relative to the sphere
+            this.mesh.add(this.model); // attach model to sphere so it moves together
+
+            console.log("model position: ", this.model.position);
+
+            this.mouseMixer = new THREE.AnimationMixer(this.model);
+
+            if (gltf.animations.length > 0) {
+                let action = this.mouseMixer.clipAction(gltf.animations[0]); 
+                action.play();
+            }
+        });
+        
+
     }
 
     // update actual mouse mesh
-    update(rotationAngle) {
+    update(rotationAngle, timeDelta) {
         let rotatedPosition4D = rotateZW(this.position, rotationAngle);
         let position3D = project4DTo3D(rotatedPosition4D, this.camera);
         this.mesh.position.set(...position3D);

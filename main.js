@@ -87,39 +87,10 @@ scene.add(tesseract.wireframe);
 
 /* Create mouse */
 const mouse = new Mouse(new THREE.Vector4(length,length,length,length), length, camera4D, 1);
-
-
-/* Set mouse position */
-
 scene.add(mouse.mesh);
 
-
-/* Create non-spherical mouse */
-const loader = new GLTFLoader();
-let mouse2;
-let mouseMixer;
-let mouseAnimation = 0; // 0 = standing in one place cutely; 1 = running; 2 = standing up on back legs (one motion)
-
-loader.load(
-    'models/mouse.glb',
-    function (gltf) {
-        mouse2 = gltf.scene;
-        mouse2.position.set(...mouse_position3d);
-        mouse2.scale.set(l/10, l/10, l/10);
-        scene.add(mouse2);
-
-        mouseMixer = new THREE.AnimationMixer(mouse2);
-
-        // Play an animation
-        if (gltf.animations.length > 0) {
-            let action = mouseMixer.clipAction(gltf.animations[mouseAnimation]); // Play first animation
-            action.play();
-        }
-    }
-);
-
 /* Create cheese */
-const cheese = new Cheese(scene, length, camera4D);
+// const cheese = new Cheese(scene, length, camera4D);
 
 /* ANIMATION PARAMETERS */
 let isPaused = false;
@@ -141,7 +112,7 @@ function animate() {
 
         // set new mouse position and update
         mouse.walk(timeDelta);
-        mouse.update(rotationAngle);
+        mouse.update(rotationAngle, timeDelta);
     }
 
     controls.update(); // This will update the camera position and target based on the user input.
@@ -160,13 +131,18 @@ function toggleAnimation() {
     }
 }
 
+// TODO: probably does not work rn. needs to be done inside animate (?)
 function toggleMousePov() {
+
+    mousePov = !mousePov;
+
     if (mousePov) {
-        camera.position.lerp(mouse.position, 0.03);
+        console.log("going to mouse pov");
+        camera3D.position.lerp(mouse.mesh.position, 0.03);
     }
     else {
-        camera.position.lerp(new THREE.Vector3(0, 2, 10), 0.03);
-        camera.lookAt(0, 5, 0);
+        camera3D.position.lerp(new THREE.Vector3(0, 2, 10), 0.03);
+        camera3D.lookAt(0, 5, 0);
     }
 }
 
@@ -182,8 +158,7 @@ document.addEventListener("keydown", (event) => {
         mouse.toggleWalking();
     } if (event.key === 'v') {
         tesseract.toggleVisibility();
-    }
-    if (event.key == 'e') {
-        mousePov = !mousePov;
+    } if (event.key === 'e') {
+        toggleMousePov();
     }
 });
