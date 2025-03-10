@@ -98,20 +98,21 @@ scene.add(mouse.mesh);
 const loader = new GLTFLoader();
 let mouse2;
 let mouseMixer;
+let mouseAnimation = 0; // 0 = standing in one place cutely; 1 = running; 2 = standing up on back legs (one motion)
 
 loader.load(
     'models/mouse.glb',
     function (gltf) {
         mouse2 = gltf.scene;
-        mouse2.position.set(1, 1, 1);
-        mouse2.scale.set(1, 1, 1);
+        mouse2.position.set(...mouse_position3d);
+        mouse2.scale.set(l/10, l/10, l/10);
         scene.add(mouse2);
 
         mouseMixer = new THREE.AnimationMixer(mouse2);
 
         // Play an animation
         if (gltf.animations.length > 0) {
-            let action = mouseMixer.clipAction(gltf.animations[1]); // Play first animation
+            let action = mouseMixer.clipAction(gltf.animations[mouseAnimation]); // Play first animation
             action.play();
         }
     }
