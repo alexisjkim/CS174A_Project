@@ -4,12 +4,13 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
 /** Cheese
  * 
- * Cheese(l, d, cameraPosition4D, cameraBasis4D) constructs the tesseract object.
+ * Cheese(l, camera4D) constructs the cheese
  * updateGeometry(rotation_angle, use_perspective) to update position of tesseract.
  */
 export default class Cheese {
     // create tesseract
-    constructor(scene, cameraPosition4D, cameraBasis4D) {
+    constructor(scene, camera4D) {
+        this.camera = camera4D;
 
         const loader = new GLTFLoader();
         loader.load(

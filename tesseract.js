@@ -3,24 +3,23 @@ import { createCylinder, createSphere, project4DTo3D, rotateZW, updateCylinder }
 
 /** Tesseract
  * 
- * Tesseract(l, d, lineMaterial, cameraPosition4D, cameraBasis4D) constructs the tesseract object.
+ * Tesseract(l, camera, meshParams, wireframeMaterial) constructs the tesseract object.
  * updateGeometry(rotation_angle, use_perspective) to update position of tesseract.
  */
 export default class Tesseract {
     // create tesseract
-    constructor(l, d, lineMaterial, cameraPosition4D, cameraBasis4D, edge_radius, edge_color, vertex_radius, vertex_color) {
+    constructor(l, camera, meshParams, wireframeMaterial) {
         // member vars
         this.l = l;
-        this.d = d;
-        this.vertices4d = [];
+        this.vertices4D = [];
         this.edges = [];
-        this.cameraPosition4D = cameraPosition4D;
-        this.cameraBasis4D = cameraBasis4D;
-        this.wireframe_geometry = new THREE.BufferGeometry();
+        this.camera = camera;
+        this.wireframeGeometry = new THREE.BufferGeometry();
+        this.showMesh = true; // else display wireframe
         
         // create 4d vertices
         for(let i = 0; i < 16; i++) {
-            this.vertices4d.push(new THREE.Vector4(
+            this.vertices4D.push(new THREE.Vector4(
                 (i&1) ? l : -l,
                 (i&2) ? l : -l,
                 (i&4) ? l : -l,
@@ -39,62 +38,59 @@ export default class Tesseract {
         }
 
         // project to 3d
-        const vertices3d = [];
-        for (let i = 0; i < this.vertices4d.length; i++) {
-            vertices3d.push(project4DTo3D(this.vertices4d[i], cameraPosition4D, cameraBasis4D, d, true));
+        const vertices3D = [];
+        for (let i = 0; i < this.vertices4D.length; i++) {
+            vertices3D.push(project4DTo3D(this.vertices4D[i], camera));
         }
         
-        this.wireframe = this.#createWireframe(vertices3d, lineMaterial);
-        this.mesh = this.#createMesh(vertices3d, this.edges, edge_radius, edge_color, vertex_radius, vertex_color);
+        this.wireframe = this.#createWireframe(vertices3D, wireframeMaterial);
+        this.mesh = this.#createMesh(vertices3D, this.edges, meshParams);
     }
 
-    updateTesseract(rotation_angle, use_perspective) {
-        let vertices4d_rotated = this.vertices4d.map(v => rotateZW(v, rotation_angle));
+    update(rotationAngle) {
+        // rotate vertices, then recalculate 3D projection
+        let rotatedVertices4D = this.vertices4D.map(v => rotateZW(v, rotationAngle));
     
-        // Project the rotated 4D vertices to 3D
-        const vertices3d = [];
-        for (let i = 0; i < this.vertices4d.length; i++) {
-            vertices3d.push(project4DTo3D(vertices4d_rotated[i], this.cameraPosition4D, this.cameraBasis4D, this.d, use_perspective));
+        const vertices3D = [];
+        for (let i = 0; i < this.vertices4D.length; i++) {
+            vertices3D.push(project4DTo3D(rotatedVertices4D[i], this.camera));
         }
     
-        this.#updateWireframe(vertices3d);
-        this.#updateMesh(vertices3d);
+        this.#updateWireframe(vertices3D);
+        this.#updateMesh(vertices3D);
     }
 
-    setMeshVisibility(visible) {
-        if(visible) {
+    toggleVisibility() {
+        // toggle between mesh and wireframe
+        if(this.showMesh) {
             this.mesh.visible = true;
+            this.wireframe.visible = false;
         } else {
             this.mesh.visible = false;
-        }
-    }
-
-    setWireframeVisibility(visible) {
-        if(visible) {
             this.wireframe.visible = true;
-        } else {
-            this.wireframe.visible = false;
         }
+        this.showMesh = !this.showMesh;
     }
 
-    #createMesh(vertices, edges, cylinder_radius, cylinder_color, sphere_radius, sphere_color) {
+    #createMesh(vertices, edges, params) {
         const group = new THREE.Group(); // collection of cylinders and spheres
         const cylinders = [];
         const spheres = [];
+        const { edgeRadius, edgeColor, vertexRadius, vertexColor } = params;
     
         edges.forEach(edge => {
-            const [start_vertex, end_vertex] = edge;
-            const start = new THREE.Vector3(...vertices[start_vertex]);
-            const end = new THREE.Vector3(...vertices[end_vertex]);
-            const cylinder = createCylinder(start, end, cylinder_radius, cylinder_color);
+            const [startVertex, endVertex] = edge;
+            const start = new THREE.Vector3(...vertices[startVertex]);
+            const end = new THREE.Vector3(...vertices[endVertex]);
+            const cylinder = createCylinder(start, end, edgeRadius, edgeColor);
 
             // store cylinders
-            cylinders.push({ mesh: cylinder, start_vertex, end_vertex }); 
+            cylinders.push({ mesh: cylinder, startVertex, endVertex }); 
             group.add(cylinder);
         });
 
         vertices.forEach((vertex, index) => {
-            const sphere = createSphere(vertex, sphere_radius, sphere_color);
+            const sphere = createSphere(vertex, vertexRadius, vertexColor);
 
             // store spheres
             spheres.push({ mesh: sphere, index }); 
@@ -109,9 +105,9 @@ export default class Tesseract {
         const { cylinders, spheres } = this.mesh.attributes;
     
         // update cylinders
-        cylinders.forEach(({ mesh, start_vertex, end_vertex }) => {
-            const start = new THREE.Vector3(...vertices[start_vertex]);
-            const end = new THREE.Vector3(...vertices[end_vertex]);
+        cylinders.forEach(({ mesh, startVertex, endVertex }) => {
+            const start = new THREE.Vector3(...vertices[startVertex]);
+            const end = new THREE.Vector3(...vertices[endVertex]);
             updateCylinder(mesh, start, end);
         });
     
@@ -131,24 +127,24 @@ export default class Tesseract {
             positions.push(vertexB.x, vertexB.y, vertexB.z);
         });
 
-        this.wireframe_geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(positions), 3));
-        let wireframe = new THREE.LineSegments(this.wireframe_geometry, lineMaterial);
+        this.wireframeGeometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(positions), 3));
+        let wireframe = new THREE.LineSegments(this.wireframeGeometry, lineMaterial);
         wireframe.matrixAutoUpdate = false;
         return wireframe;
     }
 
-    #updateWireframe(vertices3d) {
+    #updateWireframe(vertices3D) {
         // Update wireframe geometry
         const positions = [];
         this.edges.forEach(edge => {
-            const vertexA = vertices3d[edge[0]];
-            const vertexB = vertices3d[edge[1]];
+            const vertexA = vertices3D[edge[0]];
+            const vertexB = vertices3D[edge[1]];
     
             positions.push(vertexA.x, vertexA.y, vertexA.z);
             positions.push(vertexB.x, vertexB.y, vertexB.z);
         });
     
-        this.wireframe_geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(positions), 3));
-        this.wireframe_geometry.attributes.position.needsUpdate = true; // Ensure update
+        this.wireframeGeometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(positions), 3));
+        this.wireframeGeometry.attributes.position.needsUpdate = true; // Ensure update
     }
 }

@@ -1,14 +1,15 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import { project4DTo3D, createAxisLine, rotateZW } from './utils';
+import { createAxisLine } from './utils';
 import Tesseract from './tesseract';
 import Cheese from './cheese';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import Mouse from './mouse';
 
 /* Set up the scene */ 
 
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
+const camera3D = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
 
 const renderer = new THREE.WebGLRenderer();
 renderer.setSize( window.innerWidth, window.innerHeight );
@@ -17,10 +18,9 @@ document.body.appendChild( renderer.domElement );
 
 /* Change camera position */
 
-const controls = new OrbitControls(camera, renderer.domElement);
-camera.position.set(0, 2, 10); // Where the camera is.
+const controls = new OrbitControls(camera3D, renderer.domElement);
+camera3D.position.set(0, 2, 10); // Where the camera is.
 controls.target.set(0, 5, 0); // Where the camera is looking towards.
-
 
 /* Set up lights */
 
@@ -35,13 +35,6 @@ scene.add(directionalLight);
 const ambientLight = new THREE.AmbientLight(0x505050);  // Soft white light
 scene.add(ambientLight);
 
-// material for wireframe
-const lineMaterial = new THREE.LineBasicMaterial({
-    color: 0x00ff00,  // Green color
-    linewidth: 5,     // Set the thickness of the lines (adjust as needed)
-    linejoin: 'round'
-});
-
 /* Add x, y, z axes to the scene */
 
 const xAxis = createAxisLine(0xff0000, new THREE.Vector3(0, 0, 0), new THREE.Vector3(5, 0, 0)); // Red
@@ -52,135 +45,106 @@ scene.add(xAxis);
 scene.add(yAxis);
 scene.add(zAxis);
 
-/* Create Tesseract */
+/* Set 4D Camera */
 
-const l = 2;
-const d = 1;
-let cameraPosition4D = new THREE.Vector4(0, 0, 0, 5);
-let cameraBasis4D = new THREE.Matrix4().identity();
-let mesh_visibility = true;
+class Camera4D {
+    constructor(depth = 1, perspective = true) {
+        this.position = new THREE.Vector4(0, 0, 0, 5);
+        this.basis = new THREE.Matrix4().identity();
+        this.depth = depth;
+        this.perspective = perspective;
+    }
+    togglePerspective() {
+        this.perspective = !this.perspective;
+    }
+}
+let camera4D = new Camera4D();
 
+/* Set Up Tesseract */
+
+const length = 2;
+const wireframeMaterial = new THREE.LineBasicMaterial({
+    color: 0x00ff00,  // Green color
+    linewidth: 5,     // Set the thickness of the lines (adjust as needed)
+    linejoin: 'round'
+});
+const meshParams = {
+    edgeRadius: 0.05, 
+    edgeColor: new THREE.Color(0x85f73e), 
+    vertexRadius: 0.08, 
+    vertexColor: new THREE.Color(0x881bb3)
+}
 const tesseract = new Tesseract(
-    l,
-    d,
-    lineMaterial,
-    cameraPosition4D,
-    cameraBasis4D,
-    0.05,
-    new THREE.Color(0x85f73e),
-    0.08,
-    new THREE.Color(0x881bb3),
+    length,
+    camera4D,
+    meshParams,
+    wireframeMaterial
 )
-
-tesseract.setMeshVisibility(mesh_visibility);
-tesseract.setWireframeVisibility(!mesh_visibility);
 
 scene.add(tesseract.mesh);
 scene.add(tesseract.wireframe);
 
 /* Create mouse */
-
-const mouse_geometry = new THREE.SphereGeometry(0.1, 32, 32);
-const mouse_material = new THREE.MeshBasicMaterial({ color: 'red' });
-const mouse = new THREE.Mesh(mouse_geometry, mouse_material);
-
-const walkingSpeed = 1;   // units per second
-let walking = false;
-let selectedEdge = 0;
-let direction;
+const mouse = new Mouse(new THREE.Vector4(length,length,length,length), length, camera4D, 1);
 
 /* Set mouse position */
-let mouse_position4d = new THREE.Vector4(l,l,l,l);
-let mouse_position3d = project4DTo3D(mouse_position4d, cameraPosition4D, cameraBasis4D, d, true);
-mouse.position.set(...mouse_position3d);
-console.log(mouse_position3d);
-scene.add(mouse);
+
+scene.add(mouse.mesh);
 
 
 /* Create cheese */
-const cheese = new Cheese(scene, l, d, cameraPosition4D, cameraBasis4D);
+const cheese = new Cheese(scene, length, camera4D);
 
 /* ANIMATION PARAMETERS */
-
-let is_paused = false;
-let use_perspective = true;
-let animation_time = 0;
-let delta_animation_time;
+let isPaused = false;
+let animationTime = 0;
+let timeDelta;
 const period = 4; // number of seconds for the shape to make a full rotation
 const clock = new THREE.Clock();
 
 	
 function animate() {
-    if (!is_paused) {
-        delta_animation_time = clock.getDelta();
-        animation_time += delta_animation_time;
+    if (!isPaused) {
+        timeDelta = clock.getDelta();
+        animationTime += timeDelta;
 
-        let rotation_angle = (2 * Math.PI / period) * animation_time;
-        tesseract.updateTesseract(rotation_angle, use_perspective);
+        let rotationAngle = (2 * Math.PI / period) * animationTime;
 
-        // mouse walk
-        if(walking) {
-            if(mouse_position4d.getComponent(selectedEdge) == direction*l) walking = false;
-            else {
-                mouse_position4d.setComponent(selectedEdge, mouse_position4d.getComponent(selectedEdge)+direction*walkingSpeed*delta_animation_time);
-                if(mouse_position4d.getComponent(selectedEdge) > l) mouse_position4d.setComponent(selectedEdge, l);
-                if(mouse_position4d.getComponent(selectedEdge) < -l) mouse_position4d.setComponent(selectedEdge, -l);
-                //console.log(mouse_position4d.x);
-            }
-        }
+        // tesseract rotates
+        tesseract.update(rotationAngle);
 
-        let mouse4d_rotated = rotateZW(mouse_position4d, rotation_angle);
-        mouse_position3d = project4DTo3D(mouse4d_rotated, cameraPosition4D, cameraBasis4D, d, use_perspective);
-        mouse.position.set(...mouse_position3d);
+        // set new mouse position and update
+        mouse.walk(timeDelta);
+        mouse.update(rotationAngle);
     }
 
     controls.update(); // This will update the camera position and target based on the user input.
 
-	renderer.render( scene,  camera );
+	renderer.render( scene,  camera3D );
 
 }
 
 // toggle animation (isPaused and clock)
 function toggleAnimation() {
-    is_paused = !is_paused;
-    if (!is_paused) {
+    isPaused = !isPaused;
+    if (!isPaused) {
         clock.start(); // Reset delta time calculations when resuming
     } else {
         clock.stop(); // Stop updating delta time
     }
 }
-function togglePerspective() {
-    use_perspective = !use_perspective;
-}
-function switchEdge() {
-    if(!walking) {
-        selectedEdge++;
-        if(selectedEdge == 4) selectedEdge = 0;
-    }
-    console.log(selectedEdge);
-}
-function walk() {
-    if(!walking) {
-        walking = true;
-        direction = mouse_position4d.getComponent(selectedEdge) == l ? -1 : 1;
-        console.log("walking!");
-    }
-}
-
 
 document.addEventListener("keydown", (event) => {
     // pause on spacebar
     if (event.code === "Space") {
         toggleAnimation();
     } if (event.key === 'p' || event.key === 'P') {
-        togglePerspective();
+        camera4D.togglePerspective();
     } if (event.code === "ArrowRight") {
-        switchEdge();
+        mouse.switchEdge();
     } if (event.key === "Enter") {
-        walk();
+        mouse.toggleWalking();
     } if (event.key === 'v') {
-        mesh_visibility = !mesh_visibility;
-        tesseract.setMeshVisibility(mesh_visibility);
-        tesseract.setWireframeVisibility(!mesh_visibility);
+        tesseract.toggleVisibility();
     }
 });
