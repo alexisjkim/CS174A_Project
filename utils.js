@@ -113,8 +113,8 @@ function createSphere(position, radius, color) {
     const geometry = new THREE.SphereGeometry(radius, 16, 16);
     const material = new THREE.MeshStandardMaterial({ color: color });
     const sphere = new THREE.Mesh(geometry, material);
-    
-    sphere.position.set(...position);
+
+    sphere.position.copy(position);
     return sphere;
 }
 

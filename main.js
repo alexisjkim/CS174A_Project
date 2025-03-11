@@ -91,7 +91,7 @@ let camera = new Camera(renderer);
 
 /* Set Up Tesseract */
 
-const length = 2;
+const length = 4;
 const meshParams = {
     edgeRadius: 0.05, 
     edgeColor: new THREE.Color(0x85f73e), 
@@ -111,7 +111,7 @@ const mouse = new Mouse(new THREE.Vector4(length,length,length,length), length, 
 scene.add(mouse.mesh);
 
 const cheese = new Cheese(tesseract, camera);
-scene.add(cheese.mesh);
+// scene.add(cheese.mesh);
 
 /* Create cheese */
 //const cheese = new Cheese()
@@ -128,11 +128,10 @@ function animate() {
     if (!isPaused) {
         timeDelta = clock.getDelta();
         animationTime += timeDelta;
-
         let rotationAngle = (2 * Math.PI / period) * animationTime;
 
         // tesseract rotates
-        tesseract.update(rotationAngle);
+        tesseract.rotate(rotationAngle);
 
         // set new mouse position and update
         mouse.walk(timeDelta);

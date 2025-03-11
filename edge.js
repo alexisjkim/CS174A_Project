@@ -1,36 +1,31 @@
-import * as THREE from 'three';
-import { createCylinder, createSphere, project4DTo3D, rotateZW, updateCylinder } from './utils';
+import { createCylinder, updateCylinder } from './utils';
 
 export default class Edge {
 
-    constructor(start, end, radius, color) {
-
-        this.start = start;
-        this.end = end;
-        this.axis;
-
-        for(let i = 0; i < 4; i++) {
-            if(start.getComponent(i) != end.getComponent(i)) {
-                this.axis = i;
-                break;
-            }
-        }
-        
-        this.mesh = createCylinder(start, end, radius, color);
+    constructor(vertex1, vertex2, radius, color, camera) {
+        this.vertex1 = vertex1;
+        this.vertex2 = vertex2;
+        this.mesh = createCylinder(this.vertex1.getCoords(camera), this.vertex2.getCoords(camera), radius, color);
     }
 
-    update() {
-        updateCylinder(this.mesh, this.start, this.end);
+    updateMesh(camera) {
+        updateCylinder(this.mesh, this.vertex1.getCoords(camera), this.vertex2.getCoords(camera));
     }
 
-    getCoords(pos) {    // pos is in the range of 0 and 1
-        if(pos < 0 || pos > 1) {
-            console.error("pos must be in the range of 0 and 1");
+    getCoords(referenceVertex, offset) { 
+        // offset shd be in the range of 0 and 1
+        if(offset < 0 || offset > 1) {
+            console.error("offset must be in the range of 0 and 1");
             return;
         }
 
-        let coords = this.start;
-        coords.setComponent(this.axis, pos*2*l-l);
-        return coords;
+        // set a reference and target vector, if valid
+        const referenceVector = referenceVertex.vector.clone();
+        if (!referenceVector.equals(this.vertex1.vector) && !referenceVector.equals(this.vertex2.vector)) {
+            console.error("reference vector is invalid");
+        }
+        const targetVector = referenceVector.equals(this.vertex1.vector) ? this.vertex2.vector : this.vertex1.vector;
+
+        return referenceVector.lerp(targetVector, offset); // interpolate between reference and target
     }
 }
