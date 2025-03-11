@@ -111,7 +111,7 @@ const tesseract = new Tesseract(
 )
 
 scene.add(tesseract.mesh);
-scene.add(tesseract.wireframe);
+//scene.add(tesseract.wireframe);
 
 /* Create mouse */
 const mouse = new Mouse(new THREE.Vector4(length,length,length,length), length, camera, 1);
@@ -136,7 +136,7 @@ function animate() {
         let rotationAngle = (2 * Math.PI / period) * animationTime;
 
         // tesseract rotates
-        tesseract.update(rotationAngle);
+        //tesseract.update(rotationAngle);
 
         // set new mouse position and update
         mouse.walk(timeDelta);
@@ -186,7 +186,7 @@ document.addEventListener("keydown", (event) => {
     } if (event.key === "Enter") {
         mouse.toggleWalking();
     } if (event.key === 'v') {
-        tesseract.toggleVisibility();
+     //   tesseract.toggleVisibility();
     } if (event.key === 'e') {
         camera.toggleMousePov();
     }
