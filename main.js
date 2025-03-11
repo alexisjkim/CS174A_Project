@@ -92,11 +92,6 @@ let camera = new Camera(renderer);
 /* Set Up Tesseract */
 
 const length = 2;
-const wireframeMaterial = new THREE.LineBasicMaterial({
-    color: 0x00ff00,  // Green color
-    linewidth: 5,     // Set the thickness of the lines (adjust as needed)
-    linejoin: 'round'
-});
 const meshParams = {
     edgeRadius: 0.05, 
     edgeColor: new THREE.Color(0x85f73e), 
@@ -106,12 +101,10 @@ const meshParams = {
 const tesseract = new Tesseract(
     length,
     camera,
-    meshParams,
-    wireframeMaterial
+    meshParams
 )
 
 scene.add(tesseract.mesh);
-//scene.add(tesseract.wireframe);
 
 /* Create mouse */
 const mouse = new Mouse(new THREE.Vector4(length,length,length,length), length, camera, 1);
@@ -139,7 +132,7 @@ function animate() {
         let rotationAngle = (2 * Math.PI / period) * animationTime;
 
         // tesseract rotates
-        //tesseract.update(rotationAngle);
+        tesseract.update(rotationAngle);
 
         // set new mouse position and update
         mouse.walk(timeDelta);

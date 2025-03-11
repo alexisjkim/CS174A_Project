@@ -20,6 +20,7 @@ export default class Edge {
     }
 
     update() {
+        updateCylinder(this.mesh, this.start, this.end);
     }
 
     getCoords(pos) {    // pos is in the range of 0 and 1
