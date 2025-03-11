@@ -85,7 +85,7 @@ const mouse = new Mouse(new THREE.Vector4(length,length,length,length), length, 
 scene.add(mouse.mesh);
 
 /* Create cheese */
-// const cheese = new Cheese(scene, length, camera);
+//const cheese = new Cheese()
 
 /* ANIMATION PARAMETERS */
 let isPaused = false;
