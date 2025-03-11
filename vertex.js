@@ -23,4 +23,10 @@ export default class Vertex {
         // return vertex vector projected into 3d
         return project4DTo3D(this.transformedVector, camera);
     }
+
+    setColor(baseColor, glowColor, glowIntensity) {
+        this.mesh.material.color.set(baseColor);
+        this.mesh.material.emissive.set(glowColor);
+        this.mesh.material.emissiveIntensity = glowIntensity; 
+    }
 }

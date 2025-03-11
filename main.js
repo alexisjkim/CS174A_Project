@@ -154,21 +154,8 @@ function toggleAnimation() {
     }
 }
 
-// TODO: probably does not work rn. needs to be done inside animate (?)
-// function toggleMousePov() {
-
-//     mousePov = !mousePov;
-
-//     if (mousePov) {
-//         console.log("going to mouse pov");
-//         camera.camera3D.position.lerp(mouse.mesh.position, 0.03);
-//     }
-//     else {
-//         camera.camera3D.position.lerp(new THREE.Vector3(0, 2, 10), 0.03);
-//         camera.camera3D.lookAt(0, 5, 0);
-//     }
-// }
-let walkStarted = false;
+let forwardWalkStarted = false;
+let backwardWalkStarted = false;
 document.addEventListener("keydown", (event) => {
     // pause on spacebar
     if (event.code === "Space") {
@@ -177,12 +164,12 @@ document.addEventListener("keydown", (event) => {
         camera.togglePerspective();
     } if (event.code === "ArrowRight") {
         mouse.switchEdge();
-    } if (event.key === "w" && walkStarted == false) {
+    } if (event.key === "w" && forwardWalkStarted == false) {
         mouse.toggleWalking(1, true);
-        walkStarted = true;
-    } if (event.key === "s" && walkStarted == false) {
+        forwardWalkStarted = true;
+    } if (event.key === "s" && backwardWalkStarted == false) {
         mouse.toggleWalking(-1, true);
-        walkStarted = true;
+        backwardWalkStarted = true;
     } if (event.key === 'v') {
      //   tesseract.toggleVisibility();
     } if (event.key === 'e') {
@@ -194,11 +181,14 @@ document.addEventListener("keydown", (event) => {
 document.addEventListener("keyup", (event) => {
     // pause on spacebar
     if (event.key === 'w') {
-        console.log("stopping");
-        mouse.toggleWalking(1, false);
-        walkStarted = false;
+        forwardWalkStarted = false;
+        if(backwardWalkStarted == false) {
+            mouse.toggleWalking(1, false);
+        }
     } if (event.key === 's') {
-        mouse.toggleWalking(-1, false);
-        walkStarted = false;
+        backwardWalkStarted = false;
+        if(forwardWalkStarted == false) {
+            mouse.toggleWalking(-1, false);
+        }
     }
 });

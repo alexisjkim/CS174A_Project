@@ -3,10 +3,10 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
 export default class Mouse {
     constructor(startEdge, camera, speed = 1) {  
+        // member vars
         this.camera = camera;
         this.edge = startEdge; // start on a provided edge
         this.vertex = this.edge.vertex1; // start on the edge's fist vertex
-
         this.position = this.vertex.getCoords(camera);
         this.offset = 0; // offset from vertex, 0 - 1
         this.speed = speed; // units per sec, neg is backwards
@@ -14,7 +14,7 @@ export default class Mouse {
         
         // temp mouse, sphere
         const geometry = new THREE.SphereGeometry(0.1, 32, 32);
-        const material = new THREE.MeshBasicMaterial({ color: 'red', transparent: false, opacity: 1 });
+        const material = new THREE.MeshBasicMaterial({ color: "white", transparent: false, opacity: 1 });
         this.mesh = new THREE.Mesh(geometry, material);
         
         this.mesh.position.copy(this.position);
@@ -39,6 +39,8 @@ export default class Mouse {
                 action.play();
             }
         });
+
+        this.highlightCurrentPosition();
     }
 
     // update actual mouse mesh
@@ -49,26 +51,20 @@ export default class Mouse {
     // update position
     walk(timeDelta) {
         if(this.walking) {
+            // update offset when when walking
             this.offset += timeDelta*this.speed;
+
+            // stop walking when offset reaches 0 or 1
             if(this.offset >= 1) {
-                // when offset reaches 1, stop walking and change vertex
-                this.position =  this.edge.getCoords(this.vertex, 1, this.camera);
-                this.vertex = this.edge.getOtherVertex(this.vertex);
-                this.offset = 0;
+                this.offset = 1;
                 this.walking = false;
             } else if (this.offset < 0) {
-                // when offset reaches 0, stop walking
-                this.position = this.edge.getCoords(this.vertex, 0, this.camera);
                 this.offset = 0;
                 this.walking = false;
-            } else {
-                // or just change offset based on speed
-                this.position = this.edge.getCoords(this.vertex, this.offset, this.camera);
             }
-        } else {
-            // when still, offset doesn't change but absolute position does
-            this.position = this.edge.getCoords(this.vertex, this.offset, this.camera);
         }
+        // update based on offset
+        this.position = this.edge.getCoords(this.vertex, this.offset, this.camera);
         this.updateMesh();
     }
 
@@ -78,9 +74,17 @@ export default class Mouse {
         this.speed = newSpeed;
     }
 
+    highlightCurrentPosition() {
+        this.edge.setColor(0xff0000, 0xff0000, 1);
+        this.vertex.setColor(0x0000FF, 0x0000FF, 1);
+        const otherVertex = this.edge.getOtherVertex(this.vertex);
+        if(otherVertex) otherVertex.setColor(0xFFFF00, 0xFFFF00, 1);
+    }
+
     switchEdge() {
-        if(!this.walking && this.offset == 0) {
-            this.edge = this.edge.getEdge(this.vertex);
+        if(!this.walking && this.offset == 1) {
+            this.vertex = this.edge.getOtherVertex(this.vertex);
+            this.offset = 0;
         }
         console.log("Selected new edge:", this.edge);
     }

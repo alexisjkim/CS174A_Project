@@ -36,6 +36,13 @@ export default class Edge {
     }
 
     getEdge(vertex) {
-        return this; // idk yet
+        return this; // idk yet, shd return one of the other edges
+    }
+
+
+    setColor(baseColor, glowColor, glowIntensity) {
+        this.mesh.material.color.set(baseColor);
+        this.mesh.material.emissive.set(glowColor);
+        this.mesh.material.emissiveIntensity = glowIntensity; 
     }
 }
