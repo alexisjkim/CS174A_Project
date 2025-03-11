@@ -49,7 +49,7 @@ export default class Tesseract {
         }
         
         this.wireframe = this.#createWireframe(vertices3D, wireframeMaterial);
-    //    this.mesh = this.#createMesh(vertices3D, this.edges, meshParams);
+        this.mesh = this.#createMesh(vertices3D, this.edges, meshParams);
     }
 
     update(rotationAngle) {
@@ -62,7 +62,7 @@ export default class Tesseract {
         }
     
         this.#updateWireframe(vertices3D);
-      //  this.#updateMesh(vertices3D);
+        this.#updateMesh(vertices3D);
     }
 
     toggleVisibility() {
@@ -78,6 +78,7 @@ export default class Tesseract {
     }
 
     #createMesh(vertices, edges, params) {
+
         const group = new THREE.Group(); // collection of cylinders and spheres
         const cylinders = [];
         const spheres = [];
@@ -85,11 +86,15 @@ export default class Tesseract {
     
         edges.forEach(edge => {
             const [vertex1, vertex2] = edge;
-            const edge = new Edge(vertex1, vertex2, edgeRadius, edgeColor);
+
+            const start = new THREE.Vector3(...vertices[vertex1]);
+            const end = new THREE.Vector3(...vertices[vertex2]);
+
+            const newEdge = new Edge(start, end, edgeRadius, edgeColor);
 
             // store cylinders
-            cylinders.push({ mesh: edge.mesh, vertex1, vertex2 }); 
-            group.add(edge);
+            cylinders.push({ mesh: newEdge.mesh, vertex1, vertex2 }); 
+            group.add(newEdge.mesh);
         });
 
         vertices.forEach((vertex, index) => {
@@ -104,21 +109,21 @@ export default class Tesseract {
         return group;
     }
 
-    // #updateMesh(vertices) {
-    //     const { cylinders, spheres } = this.mesh.attributes;
+    #updateMesh(vertices) {
+        const { cylinders, spheres } = this.mesh.attributes;
     
-    //     // update cylinders
-    //     cylinders.forEach(({ mesh, startVertex, endVertex }) => {
-    //         const start = new THREE.Vector3(...vertices[startVertex]);
-    //         const end = new THREE.Vector3(...vertices[endVertex]);
-    //         updateCylinder(mesh, start, end);
-    //     });
+        // update cylinders
+        cylinders.forEach(({ mesh, startVertex, endVertex }) => {
+            const start = new THREE.Vector3(...vertices[startVertex]);
+            const end = new THREE.Vector3(...vertices[endVertex]);
+            updateCylinder(mesh, start, end);
+        });
     
-    //     // Update spheres (vertices)
-    //     spheres.forEach(({ mesh, index }) => {
-    //         mesh.position.set(...vertices[index]);
-    //     });
-    // }
+        // Update spheres (vertices)
+        spheres.forEach(({ mesh, index }) => {
+            mesh.position.set(...vertices[index]);
+        });
+    }
 
     #createWireframe(vertices3d, lineMaterial) {
         const positions = [];
