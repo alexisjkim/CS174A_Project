@@ -110,7 +110,7 @@ const tesseract = new Tesseract(
     wireframeMaterial
 )
 
-scene.add(tesseract.mesh);
+//scene.add(tesseract.mesh);
 //scene.add(tesseract.wireframe);
 
 /* Create mouse */

@@ -77,32 +77,32 @@ export default class Tesseract {
         this.showMesh = !this.showMesh;
     }
 
-    // #createMesh(vertices, edges, params) {
-    //     const group = new THREE.Group(); // collection of cylinders and spheres
-    //     const cylinders = [];
-    //     const spheres = [];
-    //     const { edgeRadius, edgeColor, vertexRadius, vertexColor } = params;
+    #createMesh(vertices, edges, params) {
+        const group = new THREE.Group(); // collection of cylinders and spheres
+        const cylinders = [];
+        const spheres = [];
+        const { edgeRadius, edgeColor, vertexRadius, vertexColor } = params;
     
-    //     edges.forEach(edge => {
-    //         const [vertex1, vertex2] = edge;
-    //         const edge = new Edge(vertex1, vertex2, edgeRadius, edgeColor);
+        edges.forEach(edge => {
+            const [vertex1, vertex2] = edge;
+            const edge = new Edge(vertex1, vertex2, edgeRadius, edgeColor);
 
-    //         // store cylinders
-    //         cylinders.push({ mesh: edge.mesh, vertex1, vertex2 }); 
-    //         group.add(edge);
-    //     });
+            // store cylinders
+            cylinders.push({ mesh: edge.mesh, vertex1, vertex2 }); 
+            group.add(edge);
+        });
 
-    //     vertices.forEach((vertex, index) => {
-    //         const sphere = createSphere(vertex, vertexRadius, vertexColor);
+        vertices.forEach((vertex, index) => {
+            const sphere = createSphere(vertex, vertexRadius, vertexColor);
 
-    //         // store spheres
-    //         spheres.push({ mesh: sphere, index }); 
-    //         group.add(sphere);
-    //     });
+            // store spheres
+            spheres.push({ mesh: sphere, index }); 
+            group.add(sphere);
+        });
 
-    //     group.attributes = { cylinders, spheres, vertices, edges }; // store attributes of the mesh
-    //     return group;
-    // }
+        group.attributes = { cylinders, spheres, vertices, edges }; // store attributes of the mesh
+        return group;
+    }
 
     // #updateMesh(vertices) {
     //     const { cylinders, spheres } = this.mesh.attributes;
