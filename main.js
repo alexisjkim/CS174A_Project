@@ -41,6 +41,39 @@ scene.add(xAxis);
 scene.add(yAxis);
 scene.add(zAxis);
 
+/* Add Sky */
+
+const starVertices = [];
+const numStars = 5000;
+const maxDistance = 1000; 
+const minDistance = 300;
+
+for (let i = 0; i < numStars; i++) {
+    let x, y, z, distance;
+
+    // keep iterating until a point is beyond min distance... is there a better way
+    do {
+        x = (Math.random() - 0.5) * 2 * maxDistance;
+        y = (Math.random() - 0.5) * 2 * maxDistance;
+        z = (Math.random() - 0.5) * 2 * maxDistance;
+        distance = Math.sqrt(x * x + y * y + z * z);
+    } while (distance < minDistance);
+
+    starVertices.push(x, y, z);
+}
+
+const starGeometry = new THREE.BufferGeometry();
+starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starVertices, 3));
+
+const starMaterial = new THREE.PointsMaterial({ 
+    color: 0xffffff, 
+    size: 1.5,
+    sizeAttenuation: true 
+});
+
+const stars = new THREE.Points(starGeometry, starMaterial);
+scene.add(stars);
+
 /* Set 4D Camera */
 
 // class Camera4D {
