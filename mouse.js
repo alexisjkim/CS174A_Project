@@ -14,7 +14,7 @@ export default class Mouse {
 
         // temp mouse, sphere
         const geometry = new THREE.SphereGeometry(0.1, 32, 32);
-        const material = new THREE.MeshBasicMaterial({ color: 'red' });
+        const material = new THREE.MeshBasicMaterial({ color: 'red', transparent: true, opacity: 0 });
         this.mesh = new THREE.Mesh(geometry, material);
         
         let position3D = project4DTo3D(this.position, this.camera);

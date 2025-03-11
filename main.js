@@ -117,6 +117,9 @@ scene.add(tesseract.mesh);
 const mouse = new Mouse(new THREE.Vector4(length,length,length,length), length, camera, 1);
 scene.add(mouse.mesh);
 
+const cheese = new Cheese(tesseract, camera);
+scene.add(cheese.mesh);
+
 /* Create cheese */
 //const cheese = new Cheese()
 

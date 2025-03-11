@@ -21,10 +21,10 @@ export default class Tesseract {
         // create 4d vertices
         for(let i = 0; i < 16; i++) {
             this.vertices4D.push(new THREE.Vector4(
-                (i&1) ? l : -l,
-                (i&2) ? l : -l,
+                (i&8) ? l : -l,
                 (i&4) ? l : -l,
-                (i&8) ? l : -l
+                (i&2) ? l : -l,
+                (i&1) ? l : -l
             ));
         }
         // this.vertices4D is of the form: [ [-2,-2,-2,-2], [2,-2,-2,-2], .....]
@@ -75,6 +75,10 @@ export default class Tesseract {
             this.wireframe.visible = true;
         }
         this.showMesh = !this.showMesh;
+    }
+
+    randomEdge() {
+        return this.edges[Math.floor(Math.random()*32)];
     }
 
     #createMesh(vertices, edges, params) {

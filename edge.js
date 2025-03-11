@@ -7,10 +7,29 @@ export default class Edge {
 
         this.start = start;
         this.end = end;
+        this.axis;
+
+        for(let i = 0; i < 4; i++) {
+            if(start.getComponent(i) != end.getComponent(i)) {
+                this.axis = i;
+                break;
+            }
+        }
         
         this.mesh = createCylinder(start, end, radius, color);
     }
 
     update() {
+    }
+
+    getCoords(pos) {    // pos is in the range of 0 and 1
+        if(pos < 0 || pos > 1) {
+            console.error("pos must be in the range of 0 and 1");
+            return;
+        }
+
+        let coords = this.start;
+        coords.setComponent(this.axis, pos*2*l-l);
+        return coords;
     }
 }
