@@ -1,9 +1,7 @@
 import * as THREE from 'three';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import { project4DTo3D, createAxisLine, rotateZW, updateCylinder } from './utils';
+import {  createAxisLine } from './utils';
 import Tesseract from './tesseract';
 import Cheese from './cheese';
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import Mouse from './mouse';
 import Camera from './camera';
 
@@ -107,7 +105,9 @@ const tesseract = new Tesseract(
 scene.add(tesseract.mesh);
 
 /* Create mouse */
-const mouse = new Mouse(new THREE.Vector4(length,length,length,length), length, camera, 1);
+const startEdge = tesseract.randomEdge();
+console.log(startEdge);
+const mouse = new Mouse(startEdge, camera, 1);
 scene.add(mouse.mesh);
 
 const cheese = new Cheese(tesseract, camera);
@@ -132,12 +132,11 @@ function animate() {
 
         // tesseract rotates
         tesseract.rotate(rotationAngle);
-
-        // set new mouse position and update
-        mouse.walk(timeDelta);
-        mouse.update(rotationAngle, timeDelta);
     }
+    // set new mouse position and update
 
+    mouse.walk(timeDelta);
+    
     camera.update(mouse.mesh.position);
     camera.controls3D.update(); // This will update the camera position and target based on the user input.
 
@@ -169,7 +168,7 @@ function toggleAnimation() {
 //         camera.camera3D.lookAt(0, 5, 0);
 //     }
 // }
-
+let walkStarted = false;
 document.addEventListener("keydown", (event) => {
     // pause on spacebar
     if (event.code === "Space") {
@@ -178,11 +177,28 @@ document.addEventListener("keydown", (event) => {
         camera.togglePerspective();
     } if (event.code === "ArrowRight") {
         mouse.switchEdge();
-    } if (event.key === "Enter") {
-        mouse.toggleWalking();
+    } if (event.key === "w" && walkStarted == false) {
+        mouse.toggleWalking(1, true);
+        walkStarted = true;
+    } if (event.key === "s" && walkStarted == false) {
+        mouse.toggleWalking(-1, true);
+        walkStarted = true;
     } if (event.key === 'v') {
      //   tesseract.toggleVisibility();
     } if (event.key === 'e') {
         camera.toggleMousePov();
+    }
+});
+
+
+document.addEventListener("keyup", (event) => {
+    // pause on spacebar
+    if (event.key === 'w') {
+        console.log("stopping");
+        mouse.toggleWalking(1, false);
+        walkStarted = false;
+    } if (event.key === 's') {
+        mouse.toggleWalking(-1, false);
+        walkStarted = false;
     }
 });

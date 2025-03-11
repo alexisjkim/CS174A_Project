@@ -12,20 +12,30 @@ export default class Edge {
         updateCylinder(this.mesh, this.vertex1.getCoords(camera), this.vertex2.getCoords(camera));
     }
 
-    getCoords(referenceVertex, offset) { 
+    getCoords(referenceVertex, offset, camera) { 
         // offset shd be in the range of 0 and 1
         if(offset < 0 || offset > 1) {
             console.error("offset must be in the range of 0 and 1");
             return;
         }
 
-        // set a reference and target vector, if valid
-        const referenceVector = referenceVertex.vector.clone();
-        if (!referenceVector.equals(this.vertex1.vector) && !referenceVector.equals(this.vertex2.vector)) {
-            console.error("reference vector is invalid");
+        const targetVertex = this.getOtherVertex(referenceVertex);
+        if(!targetVertex) {
+            console.error("reference vector is invalid, using vertex1");
+            referenceVertex = this.vertex1;
+            targetVertex = this.vertex2;
         }
-        const targetVector = referenceVector.equals(this.vertex1.vector) ? this.vertex2.vector : this.vertex1.vector;
+        return referenceVertex.getCoords(camera).lerp(targetVertex.getCoords(camera), offset); // interpolate between reference and target
+    }
 
-        return referenceVector.lerp(targetVector, offset); // interpolate between reference and target
+    getOtherVertex(vertex) {
+        if (!vertex.index == this.vertex1.index && !vertex.index == this.vertex2.index) {
+            return null;
+        }
+        return vertex.index == this.vertex1.index ? this.vertex2 : this.vertex1;
+    }
+
+    getEdge(vertex) {
+        return this; // idk yet
     }
 }

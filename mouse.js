@@ -1,24 +1,23 @@
 import * as THREE from 'three';
-import { project4DTo3D, rotateZW } from './utils';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
 export default class Mouse {
-    constructor(startPosition, edgeLength, camera, speed = 1) {
-        this.walking = false; // true when the mouse is currently moving
-        this.speed = speed; // units per sec
-        this.selectedEdge = 0;
-        this.direction = 1;
+    constructor(startEdge, camera, speed = 1) {  
         this.camera = camera;
-        this.position = startPosition;
-        this.edgeLength = edgeLength; // is there a better way of detecting vertices?
+        this.edge = startEdge; // start on a provided edge
+        this.vertex = this.edge.vertex1; // start on the edge's fist vertex
 
+        this.position = this.vertex.getCoords(camera);
+        this.offset = 0; // offset from vertex, 0 - 1
+        this.speed = speed; // units per sec, neg is backwards
+        this.walking = false; // true when the mouse is currently moving
+        
         // temp mouse, sphere
         const geometry = new THREE.SphereGeometry(0.1, 32, 32);
-        const material = new THREE.MeshBasicMaterial({ color: 'red', transparent: true, opacity: 0 });
+        const material = new THREE.MeshBasicMaterial({ color: 'red', transparent: false, opacity: 1 });
         this.mesh = new THREE.Mesh(geometry, material);
         
-        let position3D = project4DTo3D(this.position, this.camera);
-        this.mesh.position.set(...position3D);
+        this.mesh.position.copy(this.position);
         console.log("sphere position: ", this.mesh.position);
 
         this.mouseMixer = null;
@@ -40,44 +39,49 @@ export default class Mouse {
                 action.play();
             }
         });
-        
-
     }
 
     // update actual mouse mesh
-    update(rotationAngle, timeDelta) {
-        let rotatedPosition4D = rotateZW(this.position, rotationAngle);
-        let position3D = project4DTo3D(rotatedPosition4D, this.camera);
-        this.mesh.position.set(...position3D);
+    updateMesh() {
+        this.mesh.position.copy(this.position);
     }
 
     // update position
     walk(timeDelta) {
         if(this.walking) {
-            if(this.position.getComponent(this.selectedEdge) == this.direction*this.edgeLength) {
-                // stop walking when a vertex is reached
+            this.offset += timeDelta*this.speed;
+            if(this.offset >= 1) {
+                // when offset reaches 1, stop walking and change vertex
+                this.position =  this.edge.getCoords(this.vertex, 1, this.camera);
+                this.vertex = this.edge.getOtherVertex(this.vertex);
+                this.offset = 0;
                 this.walking = false;
+            } else if (this.offset < 0) {
+                // when offset reaches 0, stop walking
+                this.position = this.edge.getCoords(this.vertex, 0, this.camera);
+                this.offset = 0;
+                this.walking = false;
+            } else {
+                // or just change offset based on speed
+                this.position = this.edge.getCoords(this.vertex, this.offset, this.camera);
             }
-            else {
-                // otherwise increment position along selected edge
-                this.position.setComponent(this.selectedEdge, this.position.getComponent(this.selectedEdge) + this.direction*this.speed*timeDelta);
-                if(this.position.getComponent(this.selectedEdge) > this.edgeLength) this.position.setComponent(this.selectedEdge, this.edgeLength);
-                if(this.position.getComponent(this.selectedEdge) < -this.edgeLength) this.position.setComponent(this.selectedEdge, -this.edgeLength);
-            }
+        } else {
+            // when still, offset doesn't change but absolute position does
+            this.position = this.edge.getCoords(this.vertex, this.offset, this.camera);
         }
+        this.updateMesh();
     }
 
-    toggleWalking() {
-        this.walking = !this.walking;
-        this.direction = this.position.getComponent(this.selectedEdge) == this.direction*this.edgeLength ? -this.direction : this.direction;
-        console.log(this.direction);
+    // start/stop walking, can provide new speed
+    toggleWalking(newSpeed = this.speed, walking = !this.walking) {
+        this.walking = walking;
+        this.speed = newSpeed;
     }
 
     switchEdge() {
-        if(!this.walking) {
-            this.selectedEdge++;
-            if(this.selectedEdge == 4) this.selectedEdge = 0;
+        if(!this.walking && this.offset == 0) {
+            this.edge = this.edge.getEdge(this.vertex);
         }
-        console.log("Selected new edge:", this.selectedEdge);
+        console.log("Selected new edge:", this.edge);
     }
 }

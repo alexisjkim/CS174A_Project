@@ -8,7 +8,7 @@ function createAxisLine(color, start, end) {
 }
 
 // BROKEN: create camera basis in 4d to point towards the origin, given its position
-function createCameraBasis4d(cameraPosition4D) {
+function createCameraBasis4D(cameraPosition4D) {
     let wAxis = cameraPosition4D.clone().normalize().negate(); // Points toward the origin
 
     let tempUp = new THREE.Vector4(0, 1, 0, 0);
@@ -119,4 +119,4 @@ function createSphere(position, radius, color) {
 }
 
 
-export { createAxisLine, createCameraBasis4d, project4DTo3D, rotateZW, createCylinder, updateCylinder, createSphere };
+export { createAxisLine, createCameraBasis4D, project4DTo3D, rotateZW, createCylinder, updateCylinder, createSphere };
