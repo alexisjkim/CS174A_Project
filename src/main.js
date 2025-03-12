@@ -4,6 +4,7 @@ import Tesseract from './objects/tesseract';
 import Cheese from './objects/cheese';
 import Mouse from './objects/mouse';
 import Camera from './objects/camera';
+import CheeseList from './objects/cheeseList';
 
 /* Set up the scene */ 
 
@@ -63,8 +64,17 @@ scene.add(mouse.mesh);
 
 /* Add a Cheese */
 
-const cheese = new Cheese(tesseract, camera);
-scene.add(cheese.mesh);
+const cheeseEatenCounter = document.getElementById('cheese-eaten');
+const cheeseRemainingCounter = document.getElementById('cheese-remaining');
+const cheeseList = new CheeseList(cheeseEatenCounter, cheeseRemainingCounter);
+scene.add(cheeseList.mesh);
+
+// add a number of cheeses to random edges of the tesseract
+const numCheeses = 3;
+for(let i = 0; i < numCheeses; i++) {
+    const edge = tesseract.randomEdge();
+    cheeseList.addCheese(new Cheese(cheeseList, edge, camera));
+}
 
 /* ANIMATION */
 
@@ -87,8 +97,8 @@ function animate() {
 
     // mouse updates position
     mouse.walk(timeDelta);
+    cheeseList.update();
 
-    cheese.updateMesh();
     camera.update(mouse.mesh.position);
     camera.controls3D.update(); // This will update the camera position and target based on the user input.
 

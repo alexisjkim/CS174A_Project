@@ -46,4 +46,14 @@ export default class Edge {
     addCheese(cheese) {
         this.cheeses.push(cheese);
     }
+
+    checkCheeses(position) {
+        this.cheeses = this.cheeses.filter(cheese => {
+            if (cheese.eatable(position)) {
+                cheese.eat();
+                return false;
+            }
+            return true;
+        });
+    }
 }
