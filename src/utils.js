@@ -7,6 +7,14 @@ function createAxisLine(color, start, end) {
     return new THREE.Line(geometry, material);
 }
 
+function createAxes(length, xColor, yColor, zColor) {
+    const axes = new THREE.Group();
+    axes.add(createAxisLine(xColor, new THREE.Vector3(0, 0, 0), new THREE.Vector3(length, 0, 0))); // Red
+    axes.add(createAxisLine(yColor, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, length, 0))); // Yellow
+    axes.add(createAxisLine(zColor, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, length))); // Blue
+    return axes;
+}
+
 // BROKEN: create camera basis in 4d to point towards the origin, given its position
 function createCameraBasis4D(cameraPosition4D) {
     let wAxis = cameraPosition4D.clone().normalize().negate(); // Points toward the origin
@@ -118,5 +126,33 @@ function createSphere(position, radius, color) {
     return sphere;
 }
 
+function createStars(size, color, number, minDistance, maxDistance) {
+    const starVertices = [];
+    
+    for (let i = 0; i < number; i++) {
+        let x, y, z, distance;
+    
+        // keep iterating until a point is beyond min distance... is there a better way?
+        do {
+            x = (Math.random() - 0.5) * 2 * maxDistance;
+            y = (Math.random() - 0.5) * 2 * maxDistance;
+            z = (Math.random() - 0.5) * 2 * maxDistance;
+            distance = Math.sqrt(x * x + y * y + z * z);
+        } while (distance < minDistance);
+    
+        starVertices.push(x, y, z);
+    }
+    
+    const starGeometry = new THREE.BufferGeometry();
+    starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starVertices, 3));
+    
+    const starMaterial = new THREE.PointsMaterial({ 
+        color: color, 
+        size: size,
+        sizeAttenuation: true 
+    });
+    
+    return new THREE.Points(starGeometry, starMaterial);
+}
 
-export { createAxisLine, createCameraBasis4D, project4DTo3D, rotateZW, createCylinder, updateCylinder, createSphere };
+export { createAxisLine, createCameraBasis4D, project4DTo3D, rotateZW, createCylinder, updateCylinder, createSphere, createStars, createAxes };

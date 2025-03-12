@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { createSphere, project4DTo3D, rotateZW } from './utils';
+import { createSphere, project4DTo3D, rotateZW } from '../utils';
 
 export default class Vertex {
 
@@ -7,8 +7,10 @@ export default class Vertex {
         this.index = index;
         this.baseVector = new THREE.Vector4(x, y, z, w);
         this.transformedVector = this.baseVector;
-        this.mesh = createSphere(project4DTo3D(this.transformedVector, camera), radius, color);
+        this.edges = []; // store edges connected to this vertex
 
+        this.baseColor = color;
+        this.mesh = createSphere(project4DTo3D(this.transformedVector, camera), radius, color);
     }
 
     updateMesh(camera) {
@@ -24,9 +26,17 @@ export default class Vertex {
         return project4DTo3D(this.transformedVector, camera);
     }
 
-    setColor(baseColor, glowColor, glowIntensity) {
-        this.mesh.material.color.set(baseColor);
+    setColor(color = this.baseColor, glowColor = "0x000000", glowIntensity = 0) {
+        this.mesh.material.color.set(color);
         this.mesh.material.emissive.set(glowColor);
         this.mesh.material.emissiveIntensity = glowIntensity; 
+    }
+
+    addEdge(edge) {
+        this.edges.push(edge);
+    }
+
+    getEdge(index) {
+        return this.edges[index];
     }
 }

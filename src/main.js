@@ -1,22 +1,23 @@
 import * as THREE from 'three';
-import {  createAxisLine } from './utils';
-import Tesseract from './tesseract';
-import Cheese from './cheese';
-import Mouse from './mouse';
-import Camera from './camera';
+import {  createAxes, createStars } from './utils';
+import Tesseract from './objects/tesseract';
+import Cheese from './objects/cheese';
+import Mouse from './objects/mouse';
+import Camera from './objects/camera';
 
 /* Set up the scene */ 
 
 const scene = new THREE.Scene();
-
 const renderer = new THREE.WebGLRenderer();
 renderer.setSize( window.innerWidth, window.innerHeight );
 renderer.setAnimationLoop( animate );
 document.body.appendChild( renderer.domElement );
 
-/* Change camera position */
+// camera
 
-/* Set up lights */
+let camera = new Camera(renderer, 1, true);
+
+// lights
 
 const pointLight = new THREE.PointLight(0xffffff, 100, 100);
 pointLight.position.set(5, 5, 5); // Position the light
@@ -29,63 +30,15 @@ scene.add(directionalLight);
 const ambientLight = new THREE.AmbientLight(0x505050);  // Soft white light
 scene.add(ambientLight);
 
-/* Add x, y, z axes to the scene */
+// axes 
 
-const xAxis = createAxisLine(0xff0000, new THREE.Vector3(0, 0, 0), new THREE.Vector3(5, 0, 0)); // Red
-const yAxis = createAxisLine(0xffff00, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 5, 0)); // Yellow
-const zAxis = createAxisLine(0x0000ff, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 5)); // Blue
+const axes = createAxes(5, 0xff0000, 0xffff00, 0x0000ff);
+scene.add(axes);
 
-scene.add(xAxis);
-scene.add(yAxis);
-scene.add(zAxis);
+// sky
 
-/* Add Sky */
-
-const starVertices = [];
-const numStars = 5000;
-const maxDistance = 1000; 
-const minDistance = 300;
-
-for (let i = 0; i < numStars; i++) {
-    let x, y, z, distance;
-
-    // keep iterating until a point is beyond min distance... is there a better way
-    do {
-        x = (Math.random() - 0.5) * 2 * maxDistance;
-        y = (Math.random() - 0.5) * 2 * maxDistance;
-        z = (Math.random() - 0.5) * 2 * maxDistance;
-        distance = Math.sqrt(x * x + y * y + z * z);
-    } while (distance < minDistance);
-
-    starVertices.push(x, y, z);
-}
-
-const starGeometry = new THREE.BufferGeometry();
-starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starVertices, 3));
-
-const starMaterial = new THREE.PointsMaterial({ 
-    color: 0xffffff, 
-    size: 1.5,
-    sizeAttenuation: true 
-});
-
-const stars = new THREE.Points(starGeometry, starMaterial);
+const stars = createStars(1.5, 0xffffff, 3000, 400, 900);
 scene.add(stars);
-
-/* Set 4D Camera */
-
-// class Camera4D {
-//     constructor(depth = 1, perspective = true) {
-//         this.position = new THREE.Vector4(0, 0, 0, 5);
-//         this.basis = new THREE.Matrix4().identity();
-//         this.depth = depth;
-//         this.perspective = perspective;
-//     }
-//     togglePerspective() {
-//         this.perspective = !this.perspective;
-//     }
-// }
-let camera = new Camera(renderer);
 
 /* Set Up Tesseract */
 
@@ -101,42 +54,41 @@ const tesseract = new Tesseract(
     camera,
     meshParams
 )
-
 scene.add(tesseract.mesh);
 
 /* Create mouse */
-const startEdge = tesseract.randomEdge();
-console.log(startEdge);
-const mouse = new Mouse(startEdge, camera, 1);
+
+const mouse = new Mouse(tesseract.randomEdge(), camera, 1);
 scene.add(mouse.mesh);
 
+/* Add a Cheese */
+
 const cheese = new Cheese(tesseract, camera);
-// scene.add(cheese.mesh);
+scene.add(cheese.mesh);
 
-/* Create cheese */
-//const cheese = new Cheese()
+/* ANIMATION */
 
-/* ANIMATION PARAMETERS */
 let isPaused = false;
 let animationTime = 0;
-let timeDelta;
+let timeDelta = 0;
 const period = 4; // number of seconds for the shape to make a full rotation
 const clock = new THREE.Clock();
-
 	
 function animate() {
+    // tesseract rotates
     if (!isPaused) {
         timeDelta = clock.getDelta();
         animationTime += timeDelta;
         let rotationAngle = (2 * Math.PI / period) * animationTime;
 
-        // tesseract rotates
+        
         tesseract.rotate(rotationAngle);
     }
-    // set new mouse position and update
 
+    // mouse updates position
     mouse.walk(timeDelta);
-    
+
+    cheese.updateMesh();
     camera.update(mouse.mesh.position);
     camera.controls3D.update(); // This will update the camera position and target based on the user input.
 
@@ -163,7 +115,9 @@ document.addEventListener("keydown", (event) => {
     } if (event.key === 'p' || event.key === 'P') {
         camera.togglePerspective();
     } if (event.code === "ArrowRight") {
-        mouse.switchEdge();
+        mouse.switchEdge(1);
+    } if (event.code === "ArrowLeft") {
+        mouse.switchEdge(-1);
     } if (event.key === "w" && forwardWalkStarted == false) {
         mouse.toggleWalking(1, true);
         forwardWalkStarted = true;

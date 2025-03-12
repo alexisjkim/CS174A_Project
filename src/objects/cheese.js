@@ -1,7 +1,6 @@
 import * as THREE from 'three';
-import { project4DTo3D, rotateZW } from './utils';
+import { project4DTo3D } from '../utils';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import Tesseract from './tesseract';
 
 /** Cheese
  * 
@@ -10,20 +9,16 @@ import Tesseract from './tesseract';
 export default class Cheese {
     // create tesseract
     constructor(tesseract, camera) {
-        this.tesseract = tesseract;
         this.camera = camera;
-        this.edge = this.tesseract.randomEdge();
-        this.position = new THREE.Vector4(0,0,0,0);
-        //this.position = this.edge.getCoords(Math.random());
+        this.edge = tesseract.randomEdge();
+        this.edge.addCheese(this); // insert self into edge
+        this.position = this.edge.getCoords(this.edge.vertex1, 0.5, camera); // place halfway along edge
 
         // create a temporary mesh to join it to
         const geometry = new THREE.SphereGeometry(0.1, 32, 32);
         const material = new THREE.MeshBasicMaterial({ color: 'yellow', transparent: true, opacity: 0 });
         this.mesh = new THREE.Mesh(geometry, material);
-        
-        let position3D = project4DTo3D(this.position, this.camera);
-        this.mesh.position.set(...position3D);
-        console.log("sphere position: ", this.mesh.position);
+        this.mesh.position.copy(this.position);
 
         this.model = null;
 
@@ -34,5 +29,10 @@ export default class Cheese {
             this.model.position.set(0, 0, 0); // this sets the position relative to the sphere
             this.mesh.add(this.model); // attach model to sphere so it moves together
         });
+    }
+
+    updateMesh() {
+        this.position = this.edge.getCoords(this.edge.vertex1, 0.5, this.camera); // place halfway along edge
+        this.mesh.position.copy(this.position);
     }
 }

@@ -79,6 +79,10 @@ export default class Tesseract {
                     const newEdge = new Edge(vertex1, vertex2, edgeRadius, edgeColor, this.camera); 
                     this.edges.push(newEdge);
                     mesh.add(newEdge.mesh);
+
+                    // add edge to the connected vertices
+                    vertex1.addEdge(newEdge);
+                    vertex2.addEdge(newEdge);
                 }
             }
         }

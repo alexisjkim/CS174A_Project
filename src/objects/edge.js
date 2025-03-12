@@ -1,10 +1,12 @@
-import { createCylinder, updateCylinder } from './utils';
+import { createCylinder, updateCylinder } from '../utils';
 
 export default class Edge {
 
     constructor(vertex1, vertex2, radius, color, camera) {
         this.vertex1 = vertex1;
         this.vertex2 = vertex2;
+        this.cheeses = []; // i love cheese
+        this.baseColor = color;
         this.mesh = createCylinder(this.vertex1.getCoords(camera), this.vertex2.getCoords(camera), radius, color);
     }
 
@@ -35,14 +37,13 @@ export default class Edge {
         return vertex.index == this.vertex1.index ? this.vertex2 : this.vertex1;
     }
 
-    getEdge(vertex) {
-        return this; // idk yet, shd return one of the other edges
-    }
-
-
-    setColor(baseColor, glowColor, glowIntensity) {
-        this.mesh.material.color.set(baseColor);
+    setColor(color = this.baseColor, glowColor = 0x000000, glowIntensity = 0) {
+        this.mesh.material.color.set(color);
         this.mesh.material.emissive.set(glowColor);
         this.mesh.material.emissiveIntensity = glowIntensity; 
+    }
+
+    addCheese(cheese) {
+        this.cheeses.push(cheese);
     }
 }

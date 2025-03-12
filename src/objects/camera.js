@@ -30,6 +30,13 @@ export default class Camera {
         }
         this.controls3D.update();
     }
+
+    set4D(position, basis, depth = this.depth4D, perspective = this.usePerspective4D) {
+        this.position4D = position;
+        this.basis4D = basis;
+        this.depth4D = depth;
+        this.usePerspective4D = perspective;
+    }
     
     toggleMousePov() {
         this.useMousePov = !this.useMousePov;
