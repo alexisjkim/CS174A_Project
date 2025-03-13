@@ -35,8 +35,8 @@ const ambientLight = new THREE.AmbientLight(0x505050);  // Soft white light
 scene.add(ambientLight);
 
 // axes 
-const axes = createAxes(5, 0xff0000, 0xffff00, 0x0000ff);
-scene.add(axes);
+// const axes = createAxes(5, 0xff0000, 0xffff00, 0x0000ff);
+// scene.add(axes);
 
 // sky
 const stars = createStars(1.5, 0xffffff, 3000, 400, 900);
