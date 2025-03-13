@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import {  createAxes, createStars, rotationMatrixY, rotationMatrixZW, translationMatrix } from './utils';
-import Tesseract from './objects/tesseract';
+import Hypercube from './objects/hypercube';
 import Cheese from './objects/cheese';
 import Mouse from './objects/mouse';
 import Camera from './objects/camera';
@@ -10,6 +10,7 @@ import SolarSystem from './objects/solarSystem';
 
 /* SET UP THE SCENE */ 
 
+// scene
 const scene = new THREE.Scene();
 const renderer = new THREE.WebGLRenderer();
 renderer.setSize( window.innerWidth, window.innerHeight );
@@ -19,13 +20,7 @@ document.body.appendChild( renderer.domElement );
 // camera
 let camera = new Camera(renderer, 1, true);
 const cameraInitialOffset = new THREE.Vector3(0, 2, 10);
-camera.follow(null, cameraInitialOffset, "reposition");
-
-function onWindowResize() {
-    camera.camera3D.aspect = window.innerWidth / window.innerHeight;
-    camera.camera3D.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
-}
+camera.follow(null, cameraInitialOffset, "reposition"); // position camera at initial offset, looking at origin
 
 // lights
 const pointLight = new THREE.PointLight(0xffffff, 100, 100);
@@ -54,7 +49,7 @@ scene.add(stars);
 const solarSystem = new SolarSystem(camera);
 scene.add(solarSystem.mesh);
 
-// add tesseracts to the system
+// add hypercubes to the system
 solarSystem.createPlanet();
 solarSystem.createPlanet({
     orbitDistance: 13,
@@ -63,7 +58,7 @@ solarSystem.createPlanet({
     edgeColor: new THREE.Color(0x00ffff),
 });
 
-// add a single mouse, on the first tesseract
+// add a single mouse, on the first hypercube
 const mouse = new Mouse(solarSystem.getPlanet(0).hypercube.randomEdge());
 scene.add(mouse.mesh);
 
@@ -88,14 +83,9 @@ const clock = new THREE.Clock();
 
 	
 function animate() {
-    // tesseract rotates
-    if (!isPaused) {
-        timeDelta = clock.getDelta();
-        animationTime += timeDelta;
-
-        solarSystem.animate(animationTime);
-    }
-    
+    // hypercube rotates
+    timeDelta = clock.getDelta();
+    solarSystem.animate(timeDelta);
     solarSystem.update();
 
     // mouse updates position
@@ -104,22 +94,12 @@ function animate() {
 	renderer.render( scene,  camera.camera3D );
 }
 
-// toggle animation (isPaused and clock)
-function toggleAnimation() {
-    isPaused = !isPaused;
-    if (!isPaused) {
-        clock.start(); // Reset delta time calculations when resuming
-    } else {
-        clock.stop(); // Stop updating delta time
-    }
-}
-
 let forwardWalkStarted = false;
 let backwardWalkStarted = false;
 document.addEventListener("keydown", (event) => {
     // pause on spacebar
     if (event.code === "Space") {
-        toggleAnimation();
+        solarSystem.toggleAnimation();
     } if (event.key === 'p' || event.key === 'P') {
         camera.togglePerspective();
     } if (event.code === "ArrowRight") {
@@ -133,7 +113,7 @@ document.addEventListener("keydown", (event) => {
         mouse.toggleWalking(-1, true);
         backwardWalkStarted = true;
     } if (event.key === 'v') {
-     //   tesseract.toggleVisibility();
+     //   hypercube.toggleVisibility();
     } if (event.key === 'Escape') {
         camera.follow(null, cameraInitialOffset, "reposition");
     } if (event.key === 'm') {
@@ -166,5 +146,5 @@ document.addEventListener("keyup", (event) => {
     }
 });
 
-window.addEventListener('resize', onWindowResize, false);
+window.addEventListener('resize', () => onWindowResize(camera, renderer), false);
 

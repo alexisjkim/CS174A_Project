@@ -3,25 +3,25 @@ import Edge from './edge';
 import Vertex from './vertex';
 import { project4DTo3D } from '../utils';
 
-/** Tesseract
+/** hypercube
  * 
- * Tesseract(length, camera, meshParams, wireframeMaterial) constructs the tesseract object.
- * updateGeometry(rotation_angle, use_perspective) to update position of tesseract.
+ * hypercube(length, camera, meshParams, wireframeMaterial) constructs the hypercube object.
+ * updateGeometry(rotation_angle, use_perspective) to update position of hypercube.
  */
-export default class Tesseract {
-    // create tesseract
-    constructor(camera, meshParams) {
+export default class Hypercube {
+    // create hypercube
+    constructor(dimension, camera, meshParams) {
         // objects
         this.camera = camera;
         this.vertices = [];
         this.edges = [];
 
-        // matrices store 4d and 3d transformations to the tesseract
-        this.transformationMatrix4D = new THREE.Matrix4();
+        // matrices store 4d and 3d transformations to the hypercube
+        this.transformationMatrix4D = new THREE.Matrix4(); // need something else for other dimensions?
         this.transformationMatrix3D = new THREE.Matrix4();
         
         this.wireframeGeometry = new THREE.BufferGeometry();
-        this.mesh = this.#createMesh(meshParams);
+        this.mesh = this.#createMesh(dimension, meshParams);
         this.showMesh = true; // else display wireframe
     }
 
@@ -39,12 +39,18 @@ export default class Tesseract {
         })
     }
     
-    /* Apply transformations to the tesseract in 4D and 3D */
+    /* Apply transformations to the hypercube in 4D and 3D */
     apply4DTransformation(matrix) {
+        this.transformationMatrix4D.multiply(matrix);
+    }
+    copy4DTransformation(matrix) {
         this.transformationMatrix4D.copy(matrix);
     }
 
     apply3DTransformation(matrix) {
+        this.transformationMatrix3D.multiply(matrix);
+    }
+    copy3DTransformation(matrix) {
         this.transformationMatrix3D.copy(matrix);
     }
 
@@ -72,7 +78,9 @@ export default class Tesseract {
         return center3D;
     }
 
-    #createMesh(params) {
+    #createMesh(dimension, params) {
+        // DO SOMETHING WITH DIMENSION
+
         const mesh = new THREE.Group(); // collection of cylinders and spheres
         const { edgeLength, edgeRadius, edgeColor, vertexRadius, vertexColor } = params;
         

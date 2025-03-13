@@ -6,7 +6,7 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
  * Cheese
  */
 export default class Cheese {
-    // create tesseract
+    // create hypercube
     constructor(cheeseList, edge, size = 0.2, positionOnEdge = 0.5, eatableTolerance = 0.2) {
         this.cheeseList = cheeseList;
         this.edge = edge;

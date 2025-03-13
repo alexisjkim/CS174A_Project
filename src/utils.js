@@ -1,4 +1,4 @@
-import * as THREE from 'three';
+import * as THREE from "three";
 
 // creates an axis line with color from start to end
 function createAxisLine(color, start, end) {
@@ -9,43 +9,45 @@ function createAxisLine(color, start, end) {
 
 function createAxes(length, xColor, yColor, zColor) {
     const axes = new THREE.Group();
-    axes.add(createAxisLine(xColor, new THREE.Vector3(0, 0, 0), new THREE.Vector3(length, 0, 0))); // Red
-    axes.add(createAxisLine(yColor, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, length, 0))); // Yellow
-    axes.add(createAxisLine(zColor, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, length))); // Blue
+    axes.add(
+        createAxisLine(
+            xColor,
+            new THREE.Vector3(0, 0, 0),
+            new THREE.Vector3(length, 0, 0)
+        )
+    ); // Red
+    axes.add(
+        createAxisLine(
+            yColor,
+            new THREE.Vector3(0, 0, 0),
+            new THREE.Vector3(0, length, 0)
+        )
+    ); // Yellow
+    axes.add(
+        createAxisLine(
+            zColor,
+            new THREE.Vector3(0, 0, 0),
+            new THREE.Vector3(0, 0, length)
+        )
+    ); // Blue
     return axes;
 }
 
-// BROKEN: create camera basis in 4d to point towards the origin, given its position
-function createCameraBasis4D(cameraPosition4D) {
-    let wAxis = cameraPosition4D.clone().normalize().negate(); // Points toward the origin
 
-    let tempUp = new THREE.Vector4(0, 1, 0, 0);
-    if (Math.abs(wAxis.y) > 0.9) tempUp.set(1, 0, 0, 0); // Adjust to avoid parallel case
 
-    let right = tempUp.clone().sub(wAxis.clone().multiplyScalar(wAxis.dot(tempUp))).normalize(); // Make perpendicular to wAxis
-    let up = new THREE.Vector4().subVectors(tempUp, wAxis.clone().multiplyScalar(wAxis.dot(tempUp))).normalize(); // Perpendicular to both
-    let forward = new THREE.Vector4().subVectors(wAxis, up.clone().multiplyScalar(wAxis.dot(up))).normalize(); // Final perpendicular axis
-
-    let cameraBasis4D = new THREE.Matrix4().set(
-        right.x, up.x, forward.x, wAxis.x,
-        right.y, up.y, forward.y, wAxis.y,
-        right.z, up.z, forward.z, wAxis.z,
-        right.w, up.w, forward.w, wAxis.w
-    );
-
-    return cameraBasis4D;
-}
-
- /** Given a 4d vector, return its perspective or orthographic projection onto 3d.
-  * vector4D: Initial vector
-  * cameraPosition: position of 3d axis in 4d space
-  * cameraMatrix: matrix that transforms to camera basis
-  * d: depth factor (only perspective projection)
-  * perspective: use perspective or orthographic projection
-  */
- function project4DTo3D (vector4D, camera) {
+/** Given a 4d vector, return its perspective or orthographic projection onto 3d.
+ * vector4D: Initial vector
+ * cameraPosition: position of 3d axis in 4d space
+ * cameraMatrix: matrix that transforms to camera basis
+ * d: depth factor (only perspective projection)
+ * perspective: use perspective or orthographic projection
+ */
+function project4DTo3D(vector4D, camera) {
     // transform 4d vector by subtracting camera position and multiplying by the inverse of the cameraBasis
-    let transformedVector = new THREE.Vector4().subVectors(vector4D, camera.position4D);
+    let transformedVector = new THREE.Vector4().subVectors(
+        vector4D,
+        camera.position4D
+    );
     let inverseCameraBasis = new THREE.Matrix4().copy(camera.basis4D).invert();
     transformedVector.applyMatrix4(inverseCameraBasis);
     let projectedVector;
@@ -55,54 +57,19 @@ function createCameraBasis4D(cameraPosition4D) {
     let scaleFactor;
     if (camera.usePerspective4D) {
         // perspective projection: x', y', z' = x/w, y/w, z/w
-        scaleFactor = w/camera.depth4D;
+        scaleFactor = w / camera.depth4D;
     } else {
         // orthographic projection: divide by camera distance
         scaleFactor = camera.position4D.w;
     }
     if (scaleFactor === 0) scaleFactor = 1e-6; // no div by zero
-    projectedVector = new THREE.Vector3(x / scaleFactor, y / scaleFactor, z / scaleFactor);
+    projectedVector = new THREE.Vector3(
+        x / scaleFactor,
+        y / scaleFactor,
+        z / scaleFactor
+    );
 
     return projectedVector;
-}
-
-function createProjectionMatrix(camera) {
-    let cameraPosition4D = camera.position4D; // seperate vector representing cameras position in 4d (so we dont need homogeneous matrices)
-    let cameraBasis4D = camera.basis4D; // matrix representing camera coordinate system
-
-    // translate based ond camera position, and use inverse of basis
-    let cameraTransformationMatrix = new THREE.Matrix4();
-    cameraTransformationMatrix.identity()
-        .makeTranslation(-cameraPosition4D.x, -cameraPosition4D.y, -cameraPosition4D.z)
-        .multiply(new THREE.Matrix4().copy(cameraBasis4D).invert()); // Inverse of camera basis
-
-    // create actual projection matrix
-    let projectionMatrix = new THREE.Matrix4();
-
-    if (camera.usePerspective4D) {
-        // perspective, with depth factor
-        let depthFactor = camera.depth4D;
-        
-        projectionMatrix.set(
-            1, 0, 0, 0, 
-            0, 1, 0, 0, 
-            0, 0, 1, 0, 
-            0, 0, -1 / depthFactor, 1 
-        );
-    } else {
-        // orthographic
-        projectionMatrix.set(
-            1, 0, 0, 0, 
-            0, 1, 0, 0, 
-            0, 0, 1, 0, 
-            0, 0, 0, 1  
-        );
-    }
-
-    // Combine the camera transformation with the projection matrix
-    projectionMatrix.multiply(cameraTransformationMatrix);
-
-    return projectionMatrix;
 }
 
 
@@ -126,7 +93,7 @@ function rotationMatrixY(theta) {
 function rotationMatrixZW(theta) {
     let cos = Math.cos(theta);
     let sin = Math.sin(theta);
-    
+
     // Create a rotation matrix for the XY plane
     return new THREE.Matrix4().set(
         1, 0, 0, 0,
@@ -136,36 +103,27 @@ function rotationMatrixZW(theta) {
     );
 }
 
-// Given a matrix of 4d vectors, rotate each one around the ZW axis by theta radians
-
-function rotateZW(v, theta) {
-    const cosT = Math.cos(theta);
-    const sinT = Math.sin(theta);
-
-    const x = v.x;
-    const y = v.y;
-    const z = v.z * cosT - v.w * sinT;
-    const w = v.z * sinT + v.w * cosT;
-    
-    return new THREE.Vector4(x, y, z, w);
-}
-
 // create cylinder along an edge
 function createCylinder(start, end, radius, color) {
     const direction = new THREE.Vector3().subVectors(end, start);
     const length = direction.length();
-    
+
     // Create a cylinder along the Y-axis
     const geometry = new THREE.CylinderGeometry(radius, radius, length, 16);
     const material = new THREE.MeshStandardMaterial({ color: color });
     const cylinder = new THREE.Mesh(geometry, material);
 
     // Position the cylinder at the midpoint
-    const midpoint = new THREE.Vector3().addVectors(start, end).multiplyScalar(0.5);
+    const midpoint = new THREE.Vector3()
+        .addVectors(start, end)
+        .multiplyScalar(0.5);
     cylinder.position.copy(midpoint);
 
     // Align the cylinder with the edge direction
-    cylinder.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction.clone().normalize());
+    cylinder.quaternion.setFromUnitVectors(
+        new THREE.Vector3(0, 1, 0),
+        direction.clone().normalize()
+    );
 
     return cylinder;
 }
@@ -173,13 +131,18 @@ function createCylinder(start, end, radius, color) {
 function updateCylinder(cylinder, start, end) {
     const direction = new THREE.Vector3().subVectors(end, start);
     const length = direction.length();
-    
+
     // Update position
-    const midpoint = new THREE.Vector3().addVectors(start, end).multiplyScalar(0.5);
+    const midpoint = new THREE.Vector3()
+        .addVectors(start, end)
+        .multiplyScalar(0.5);
     cylinder.position.copy(midpoint);
 
     // Update rotation
-    cylinder.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction.clone().normalize());
+    cylinder.quaternion.setFromUnitVectors(
+        new THREE.Vector3(0, 1, 0),
+        direction.clone().normalize()
+    );
 
     // Update scale
     cylinder.scale.set(1, length / cylinder.geometry.parameters.height, 1);
@@ -197,10 +160,10 @@ function createSphere(position, radius, color) {
 
 function createStars(size, color, number, minDistance, maxDistance) {
     const starVertices = [];
-    
+
     for (let i = 0; i < number; i++) {
         let x, y, z, distance;
-    
+
         // keep iterating until a point is beyond min distance... is there a better way?
         do {
             x = (Math.random() - 0.5) * 2 * maxDistance;
@@ -208,20 +171,146 @@ function createStars(size, color, number, minDistance, maxDistance) {
             z = (Math.random() - 0.5) * 2 * maxDistance;
             distance = Math.sqrt(x * x + y * y + z * z);
         } while (distance < minDistance);
-    
+
         starVertices.push(x, y, z);
     }
-    
+
     const starGeometry = new THREE.BufferGeometry();
-    starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starVertices, 3));
-    
-    const starMaterial = new THREE.PointsMaterial({ 
-        color: color, 
+    starGeometry.setAttribute(
+        "position",
+        new THREE.Float32BufferAttribute(starVertices, 3)
+    );
+
+    const starMaterial = new THREE.PointsMaterial({
+        color: color,
         size: size,
-        sizeAttenuation: true 
+        sizeAttenuation: true,
     });
-    
+
     return new THREE.Points(starGeometry, starMaterial);
 }
 
-export { createAxisLine, createCameraBasis4D, project4DTo3D, translationMatrix, rotationMatrixY, rotationMatrixZW, createCylinder, updateCylinder, createSphere, createStars, createAxes, createProjectionMatrix };
+function onWindowResize(camera, renderer) {
+    camera.camera3D.aspect = window.innerWidth / window.innerHeight;
+    camera.camera3D.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+}
+
+export {
+    project4DTo3D,
+    translationMatrix,
+    rotationMatrixY,
+    rotationMatrixZW,
+    createCylinder,
+    updateCylinder,
+    createSphere,
+    createStars,
+    createAxes,
+    onWindowResize,
+};
+
+
+
+// Given a matrix of 4d vectors, rotate each one around the ZW axis by theta radians
+
+// function rotateZW(v, theta) {
+//     const cosT = Math.cos(theta);
+//     const sinT = Math.sin(theta);
+
+//     const x = v.x;
+//     const y = v.y;
+//     const z = v.z * cosT - v.w * sinT;
+//     const w = v.z * sinT + v.w * cosT;
+
+//     return new THREE.Vector4(x, y, z, w);
+// }
+// function createProjectionMatrix(camera) {
+//     let cameraPosition4D = camera.position4D; // seperate vector representing cameras position in 4d (so we dont need homogeneous matrices)
+//     let cameraBasis4D = camera.basis4D; // matrix representing camera coordinate system
+
+//     // translate based ond camera position, and use inverse of basis
+//     let cameraTransformationMatrix = new THREE.Matrix4();
+//     cameraTransformationMatrix
+//         .identity()
+//         .makeTranslation(
+//             -cameraPosition4D.x,
+//             -cameraPosition4D.y,
+//             -cameraPosition4D.z
+//         )
+//         .multiply(new THREE.Matrix4().copy(cameraBasis4D).invert()); // Inverse of camera basis
+
+//     // create actual projection matrix
+//     let projectionMatrix = new THREE.Matrix4();
+
+//     if (camera.usePerspective4D) {
+//         // perspective, with depth factor
+//         let depthFactor = camera.depth4D;
+
+//         projectionMatrix.set(
+//             1,
+//             0,
+//             0,
+//             0,
+//             0,
+//             1,
+//             0,
+//             0,
+//             0,
+//             0,
+//             1,
+//             0,
+//             0,
+//             0,
+//             -1 / depthFactor,
+//             1
+//         );
+//     } else {
+//         // orthographic
+//         projectionMatrix.set(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
+//     }
+
+//     // Combine the camera transformation with the projection matrix
+//     projectionMatrix.multiply(cameraTransformationMatrix);
+
+//     return projectionMatrix;
+// }
+
+// // BROKEN: create camera basis in 4d to point towards the origin, given its position
+// function createCameraBasis4D(cameraPosition4D) {
+//     let wAxis = cameraPosition4D.clone().normalize().negate(); // Points toward the origin
+
+//     let tempUp = new THREE.Vector4(0, 1, 0, 0);
+//     if (Math.abs(wAxis.y) > 0.9) tempUp.set(1, 0, 0, 0); // Adjust to avoid parallel case
+
+//     let right = tempUp
+//         .clone()
+//         .sub(wAxis.clone().multiplyScalar(wAxis.dot(tempUp)))
+//         .normalize(); // Make perpendicular to wAxis
+//     let up = new THREE.Vector4()
+//         .subVectors(tempUp, wAxis.clone().multiplyScalar(wAxis.dot(tempUp)))
+//         .normalize(); // Perpendicular to both
+//     let forward = new THREE.Vector4()
+//         .subVectors(wAxis, up.clone().multiplyScalar(wAxis.dot(up)))
+//         .normalize(); // Final perpendicular axis
+
+//     let cameraBasis4D = new THREE.Matrix4().set(
+//         right.x,
+//         up.x,
+//         forward.x,
+//         wAxis.x,
+//         right.y,
+//         up.y,
+//         forward.y,
+//         wAxis.y,
+//         right.z,
+//         up.z,
+//         forward.z,
+//         wAxis.z,
+//         right.w,
+//         up.w,
+//         forward.w,
+//         wAxis.w
+//     );
+
+//     return cameraBasis4D;
+// }

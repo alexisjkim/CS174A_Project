@@ -6,7 +6,7 @@ import Cheese from "./cheese";
 export default class Planet {
     constructor(
         hypercube,
-        animParams = { orbitDistance: 8, orbitSpeed: 0.25, rotate4DSpeed: 0.15 }
+        animParams = { orbitDistance: 8, orbitSpeed: 0.25, cubeRotationSpeed: 0.15,  animate: true, orbitTime: 0, rotationTime: 0 }
     ) {
         this.animParams = animParams;
         this.hypercube = hypercube;
@@ -24,24 +24,26 @@ export default class Planet {
         this.direction = this.#directionToOrigin();
     }
 
-    rotate(time) {
+    rotate(timeDelta) {
+        this.animParams.rotationTime += timeDelta;
         let modelTransform4D = new THREE.Matrix4();
         modelTransform4D.multiply(
-            rotationMatrixZW(2 * this.animParams.rotate4DSpeed * Math.PI * time)
+            rotationMatrixZW(2 * this.animParams.cubeRotationSpeed * Math.PI * this.animParams.rotationTime)
         );
-        this.hypercube.apply4DTransformation(modelTransform4D);
+        this.hypercube.copy4DTransformation(modelTransform4D);
     }
 
-    orbit(time) {
+    orbit(timeDelta) {
         // orbits around (0, 0, 0)
+        this.animParams.orbitTime += timeDelta;
         let modelTransform3D = new THREE.Matrix4();
         modelTransform3D.premultiply(
             translationMatrix(this.animParams.orbitDistance, 0, 0)
         );
         modelTransform3D.premultiply(
-            rotationMatrixY(this.animParams.orbitSpeed * time)
+            rotationMatrixY(this.animParams.orbitSpeed * this.animParams.orbitTime)
         );
-        this.hypercube.apply3DTransformation(modelTransform3D);
+        this.hypercube.copy3DTransformation(modelTransform3D);
     }
 
     createCheese(numCheese) {

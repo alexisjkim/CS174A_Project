@@ -12,7 +12,7 @@ export default class Camera {
             1000
         );
         this.controls3D = new OrbitControls(this.camera3D, renderer.domElement);
-        this.coi = null; // center of interest (mouse, tesseract, etc...)
+        this.coi = null; // center of interest (mouse, hypercube, etc...)
         this.offset = new THREE.Vector3(0, 0, 0); // offset from coi
         this.controlMode = "free";
 

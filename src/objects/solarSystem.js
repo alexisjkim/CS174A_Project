@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import Planet from "./planet";
-import Tesseract from "./tesseract";
+import Hypercube from "./hypercube";
 
 export default class SolarSystem {
     constructor(camera) {
@@ -10,12 +10,16 @@ export default class SolarSystem {
         this.mesh = this.#createMesh();
     }
 
-    animate(animationTime) {
+    animate(timeDelta) {
         this.planets.forEach((planet) => {
-            planet.rotate(animationTime);
-            planet.orbit(animationTime);
+            if (planet.animParams.animate) {
+                planet.rotate(timeDelta);
+                planet.orbit(timeDelta);
+            }
         });
-        this.#animateSun(animationTime);
+        if (this.sun.animate) {
+            this.#animateSun(timeDelta);
+        }
     }
 
     update() {
@@ -24,7 +28,21 @@ export default class SolarSystem {
         });
     }
 
+    toggleAnimation(object) {
+        if(!object) {
+            // toggle all animations
+            this.planets.forEach((planet) => {
+                planet.animParams.animate = !planet.animParams.animate;
+            })
+            this.sun.animate = !this.sun.animate;
+        }
+        // TODO toggle each one individually
+    }
+
     createPlanet({
+        animate = true,
+        rotationTime = 0,
+        orbitTime = 0,
         orbitDistance = 10,
         orbitSpeed = 0.25,
         numCheese = 1,
@@ -34,21 +52,25 @@ export default class SolarSystem {
         vertexRadius = 0.08,
         vertexColor = new THREE.Color(0x881bb3),
         cubeRotationSpeed = 0.15,
+        cubeDimension = 4,
     } = {}) {
-        const hypercube = new Tesseract(this.camera, {
+        const hypercube = new Hypercube(cubeDimension, this.camera, {
             edgeLength,
             edgeRadius,
             edgeColor,
             vertexRadius,
             vertexColor,
         });
-    
+
         const planet = new Planet(hypercube, {
             orbitDistance,
             orbitSpeed,
-            rotate4DSpeed: cubeRotationSpeed,
+            cubeRotationSpeed,
+            animate,
+            orbitTime,
+            rotationTime,
         });
-    
+
         planet.createCheese(numCheese);
         this.planets.push(planet);
         this.mesh.add(planet.mesh);
@@ -67,8 +89,11 @@ export default class SolarSystem {
     linkCheeseDisplay(planetNum, display) {
         let planet = this.getPlanet(planetNum);
         if (planet) {
-            console.log(planet)
-            planet.cheeseList.linkDisplay(display.cheeseEaten, display.cheeseRemaining);
+            console.log(planet);
+            planet.cheeseList.linkDisplay(
+                display.cheeseEaten,
+                display.cheeseRemaining
+            );
         }
     }
 
@@ -77,13 +102,16 @@ export default class SolarSystem {
         let sunMaterial = new THREE.MeshBasicMaterial({ color: baseColor });
         return {
             position: new THREE.Vector3(0, 0, 0),
+            animate: true,
+            time: 0,
             mesh: new THREE.Mesh(sunGeometry, sunMaterial),
             light: new THREE.PointLight(0xffffff, 1, 0, 1),
         };
     }
 
-    #animateSun(animationTime) {
-        let period = animationTime % 10.0;
+    #animateSun(timeDelta) {
+        this.sun.time += timeDelta;
+        let period = this.sun.time % 10.0;
         let t = Math.abs(1 - period / 5);
 
         let radius = 1 + 2.0 * t;
