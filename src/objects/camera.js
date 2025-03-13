@@ -119,6 +119,10 @@ export default class Camera {
         // right vector (k? from class)
         const right = new THREE.Vector3().crossVectors(up, direction).normalize();
 
+        if (Math.abs(direction.dot(up)) > 0.999) {
+            right.set(1, 0, 0); // Default right vector if direction is nearly vertical
+        }
+
         // new up vector(j?)
         const newUp = new THREE.Vector3().crossVectors(direction, right).normalize();
 
@@ -127,6 +131,6 @@ export default class Camera {
         matrix.makeBasis(direction, newUp, right);
 
         // transform the offset into world space
-        return offset.applyMatrix4(matrix);
+        return offset.clone().applyMatrix4(matrix);
     }
 }

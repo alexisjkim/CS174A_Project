@@ -115,7 +115,11 @@ document.addEventListener("keydown", (event) => {
     } if (event.key === 'Escape') {
         camera.follow(null, null, "free");
     } if (event.key === 'm') {
-        camera.follow(mouse);
+        const relativeOffset = {
+            type: "relative",
+            vector: new THREE.Vector3(0, 1, 0)
+        }
+        camera.follow(mouse, relativeOffset);
     } if (event.key === '0') {
         const offsetSun = new THREE.Vector3(0, 20, 0);
         camera.follow(solarSystem.sun, offsetSun, "reposition");
