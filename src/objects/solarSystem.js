@@ -98,8 +98,19 @@ export default class SolarSystem {
     }
 
     #createSun(radius = 1, baseColor = 0xffffff) {
-        let sunGeometry = new THREE.SphereGeometry(radius, 32, 32);
-        let sunMaterial = new THREE.MeshBasicMaterial({ color: baseColor });
+        const textureLoader = new THREE.TextureLoader();
+        const sunTexture = textureLoader.load('assets/sun_texture.png');
+
+        const sunGeometry = new THREE.SphereGeometry(radius, 64, 64);
+        const sunMaterial = new THREE.MeshStandardMaterial({
+            map: sunTexture,   // Apply texture
+            emissive: 0xffaa00, // Glow effect
+            emissiveIntensity: 1,
+        });
+
+        const sunMesh = new THREE.Mesh(sunGeometry, sunMaterial);
+        const sunLight = new THREE.PointLight(0xffaa00, 1, 10, 2);
+
         return {
             position: new THREE.Vector3(0, 0, 0),
             animate: true,
