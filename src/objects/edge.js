@@ -28,7 +28,7 @@ export default class Edge {
             referenceVertex = this.vertex1;
             targetVertex = this.vertex2;
         }
-        return referenceVertex.projectedVector.lerp(targetVertex.projectedVector, offset); // interpolate between reference and target
+        return referenceVertex.projectedVector.clone().lerp(targetVertex.projectedVector, offset); // interpolate between reference and target
     }
 
     getOtherVertex(vertex) {

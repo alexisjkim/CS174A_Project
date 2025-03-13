@@ -8,7 +8,7 @@ export default class Mouse {
         this.vertex = this.edge.vertex1; // start on the edge's fist vertex
 
         // state
-        this.position = this.vertex.projectedVector;
+        this.position = this.vertex.projectedVector.clone();
         this.direction = this.#directionToTargetVertex();
         this.offset = 0; // offset from vertex, 0 - 1
         this.nextEdgeIndex = 0;
@@ -81,7 +81,7 @@ export default class Mouse {
     }
 
     #directionToTargetVertex() {
-        return new THREE.Vector3().subVectors(this.edge.getOtherVertex(this.vertex).projectedVector, this.position).normalize();
+        return new THREE.Vector3().subVectors(this.edge.getOtherVertex(this.vertex).projectedVector.clone(), this.position).normalize();
     }
 
     #highlightCurrentPosition() {
