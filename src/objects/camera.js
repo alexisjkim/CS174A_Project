@@ -46,6 +46,7 @@ export default class Camera {
 
             // use camera offset, either a global or relative value
             let offset;
+            console.log(this.offset);
             this.offset?.type === "relative"
                 ? (offset = this.#computeRelativeOffset(this.offset.vector, direction))
                 : (offset = this.offset);

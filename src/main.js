@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import {  createAxes, createStars, rotationMatrixY, rotationMatrixZW, translationMatrix } from './utils';
+import {  createAxes, createStars, onWindowResize, rotationMatrixY, rotationMatrixZW, translationMatrix } from './utils';
 import Hypercube from './objects/hypercube';
 import Cheese from './objects/cheese';
 import Mouse from './objects/mouse';
@@ -72,12 +72,8 @@ const display = {
 solarSystem.linkCheeseDisplay(0, display);
 
 
-
-
 /* ANIMATION */
 
-let isPaused = false;
-let animationTime = 0;
 let timeDelta = 0;
 const clock = new THREE.Clock();
 
@@ -114,8 +110,10 @@ document.addEventListener("keydown", (event) => {
         backwardWalkStarted = true;
     } if (event.key === 'v') {
      //   hypercube.toggleVisibility();
-    } if (event.key === 'Escape') {
+    } if (event.key === 'Enter') {
         camera.follow(null, cameraInitialOffset, "reposition");
+    } if (event.key === 'Escape') {
+        camera.follow(null, null, "free");
     } if (event.key === 'm') {
         camera.follow(mouse);
     } if (event.key === '0') {
