@@ -1,12 +1,14 @@
 import * as THREE from 'three';
-import {  createAxes, createStars } from './utils';
+import {  createAxes, createStars, rotationMatrixY, rotationMatrixZW, translationMatrix } from './utils';
 import Tesseract from './objects/tesseract';
 import Cheese from './objects/cheese';
 import Mouse from './objects/mouse';
 import Camera from './objects/camera';
 import CheeseList from './objects/cheeseList';
+import SolarSystem from './objects/solarSystem';
 
-/* Set up the scene */ 
+
+/* SET UP THE SCENE */ 
 
 const scene = new THREE.Scene();
 const renderer = new THREE.WebGLRenderer();
@@ -15,16 +17,17 @@ renderer.setAnimationLoop( animate );
 document.body.appendChild( renderer.domElement );
 
 // camera
-
 let camera = new Camera(renderer, 1, true);
+const cameraInitialOffset = new THREE.Vector3(0, 2, 10);
+camera.follow(null, cameraInitialOffset, "reposition");
 
 function onWindowResize() {
     camera.camera3D.aspect = window.innerWidth / window.innerHeight;
     camera.camera3D.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
 }
-// lights
 
+// lights
 const pointLight = new THREE.PointLight(0xffffff, 100, 100);
 pointLight.position.set(5, 5, 5); // Position the light
 scene.add(pointLight);
@@ -37,118 +40,67 @@ const ambientLight = new THREE.AmbientLight(0x505050);  // Soft white light
 scene.add(ambientLight);
 
 // axes 
-
 const axes = createAxes(5, 0xff0000, 0xffff00, 0x0000ff);
 scene.add(axes);
 
 // sky
-
 const stars = createStars(1.5, 0xffffff, 3000, 400, 900);
 scene.add(stars);
 
-/* Set Up Tesseract */
 
-const meshParams = {
-    edgeLength: 4,
-    edgeRadius: 0.05, 
-    edgeColor: new THREE.Color(0x85f73e), 
-    vertexRadius: 0.08, 
-    vertexColor: new THREE.Color(0x881bb3)
-}
-const tesseract = new Tesseract(
-    camera,
-    meshParams
-)
-scene.add(tesseract.mesh);
+/* SET UP THE WORLD */
 
-/* Create mouse */
+// create solar system
+const solarSystem = new SolarSystem(camera);
+scene.add(solarSystem.mesh);
 
-const mouse = new Mouse(tesseract.randomEdge(), 1);
+// add tesseracts to the system
+solarSystem.createPlanet();
+solarSystem.createPlanet({
+    orbitDistance: 13,
+    orbitSpeed: 0.15,
+    cubeRotationSpeed: -0.15,
+    edgeColor: new THREE.Color(0x00ffff),
+});
+
+// add a single mouse, on the first tesseract
+const mouse = new Mouse(solarSystem.getPlanet(0).hypercube.randomEdge());
 scene.add(mouse.mesh);
 
-/* Add a Cheese */
+/* SET UP DISPLAY */
 
-const cheeseEatenCounter = document.getElementById('cheese-eaten');
-const cheeseRemainingCounter = document.getElementById('cheese-remaining');
-const cheeseList = new CheeseList(cheeseEatenCounter, cheeseRemainingCounter);
-scene.add(cheeseList.mesh);
+const display = {
+    cheeseEaten: document.getElementById('cheese-eaten'),
+    cheeseRemaining: document.getElementById('cheese-remaining')
 
-// add a number of cheeses to random edges of the tesseract
-const numCheeses = 3;
-for(let i = 0; i < numCheeses; i++) {
-    const edge = tesseract.randomEdge();
-    cheeseList.addCheese(new Cheese(cheeseList, edge, camera));
 }
+solarSystem.linkCheeseDisplay(0, display);
+
+
+
 
 /* ANIMATION */
 
 let isPaused = false;
 let animationTime = 0;
 let timeDelta = 0;
-const period = 4; // number of seconds for the shape to make a full rotation
 const clock = new THREE.Clock();
 
-function translationMatrix(tx, ty, tz) {
-	return new THREE.Matrix4().set(
-		1, 0, 0, tx,
-		0, 1, 0, ty,
-		0, 0, 1, tz,
-		0, 0, 0, 1
-	);
-}
-function rotationMatrixY(theta) {
-    return new THREE.Matrix4().set(
-        Math.cos(theta), 0, Math.sin(theta), 0,
-        0, 1, 0, 0,
-        -Math.sin(theta), 0, Math.cos(theta), 0,
-        0, 0, 0, 1
-    );
-}
-
-function rotationMatrixXY(theta) {
-    let cos = Math.cos(theta);
-    let sin = Math.sin(theta);
-    
-    // Create a rotation matrix for the XY plane
-    return new THREE.Matrix4().set(
-        1, 0, 0, 0,
-        0, 1, 0, 0,
-        0, 0, cos, -sin,
-        0, 0, sin, cos
-    );
-}
 	
 function animate() {
     // tesseract rotates
     if (!isPaused) {
         timeDelta = clock.getDelta();
         animationTime += timeDelta;
-        
-        let angle4D = (2 * Math.PI / period) * animationTime;
-        let distance = 5
-        let speed = 1
-        let angle3D = animationTime * speed;
-        
-        // rotate tesseract in 4D
-        let modelTransform4D = new THREE.Matrix4(); 
-        modelTransform4D.multiply(rotationMatrixXY(angle4D));
-        tesseract.apply4DTransformation(modelTransform4D);
-        
-        // tesseract orbits in 3D
-        let modelTransform3D = new THREE.Matrix4(); 
-        modelTransform3D.premultiply(translationMatrix(distance, 0, 0));
-        modelTransform3D.premultiply(rotationMatrixY(angle3D));
-        tesseract.apply3DTransformation(modelTransform3D);
-    }
 
-    tesseract.update();
+        solarSystem.animate(animationTime);
+    }
+    
+    solarSystem.update();
+
     // mouse updates position
     mouse.walk(timeDelta);
-    cheeseList.update();
-
-    camera.update(mouse.mesh.position);
-    camera.controls3D.update(); // This will update the camera position and target based on the user input.
-
+    camera.update();
 	renderer.render( scene,  camera.camera3D );
 }
 
@@ -182,8 +134,19 @@ document.addEventListener("keydown", (event) => {
         backwardWalkStarted = true;
     } if (event.key === 'v') {
      //   tesseract.toggleVisibility();
-    } if (event.key === 'e') {
-        camera.toggleMousePov();
+    } if (event.key === 'Escape') {
+        camera.follow(null, cameraInitialOffset, "reposition");
+    } if (event.key === 'm') {
+        camera.follow(mouse);
+    } if (event.key === '0') {
+        const offsetSun = new THREE.Vector3(0, 20, 0);
+        camera.follow(solarSystem.sun, offsetSun, "reposition");
+    } if (event.key === '1') {
+        const relativeOffset = { 
+            type: "relative",
+            vector: new THREE.Vector3(-5, 0, 0)
+        }
+        camera.follow(solarSystem.getPlanet(0), relativeOffset);
     }
 });
 

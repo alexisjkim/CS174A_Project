@@ -106,6 +106,35 @@ function createProjectionMatrix(camera) {
 }
 
 
+function translationMatrix(tx, ty, tz) {
+    return new THREE.Matrix4().set(
+        1, 0, 0, tx,
+        0, 1, 0, ty,
+        0, 0, 1, tz,
+        0, 0, 0, 1
+    );
+}
+function rotationMatrixY(theta) {
+    return new THREE.Matrix4().set(
+        Math.cos(theta), 0, Math.sin(theta), 0,
+        0, 1, 0, 0,
+        -Math.sin(theta), 0, Math.cos(theta), 0,
+        0, 0, 0, 1
+    );
+}
+
+function rotationMatrixZW(theta) {
+    let cos = Math.cos(theta);
+    let sin = Math.sin(theta);
+    
+    // Create a rotation matrix for the XY plane
+    return new THREE.Matrix4().set(
+        1, 0, 0, 0,
+        0, 1, 0, 0,
+        0, 0, cos, -sin,
+        0, 0, sin, cos
+    );
+}
 
 // Given a matrix of 4d vectors, rotate each one around the ZW axis by theta radians
 
@@ -195,4 +224,4 @@ function createStars(size, color, number, minDistance, maxDistance) {
     return new THREE.Points(starGeometry, starMaterial);
 }
 
-export { createAxisLine, createCameraBasis4D, project4DTo3D, rotateZW, createCylinder, updateCylinder, createSphere, createStars, createAxes, createProjectionMatrix };
+export { createAxisLine, createCameraBasis4D, project4DTo3D, translationMatrix, rotationMatrixY, rotationMatrixZW, createCylinder, updateCylinder, createSphere, createStars, createAxes, createProjectionMatrix };

@@ -9,6 +9,7 @@ export default class Mouse {
 
         // state
         this.position = this.vertex.projectedVector;
+        this.direction = this.#directionToTargetVertex();
         this.offset = 0; // offset from vertex, 0 - 1
         this.nextEdgeIndex = 0;
         this.speed = speed; // units per sec, neg is backwards
@@ -48,6 +49,7 @@ export default class Mouse {
         }
         // update based on offset
         this.position = this.edge.getCoords(this.vertex, this.offset);
+        this.direction = this.#directionToTargetVertex();
         this.edge.checkCheeses(this.position);
         this.updateMesh();
     }
@@ -56,20 +58,6 @@ export default class Mouse {
     toggleWalking(newSpeed = this.speed, walking = !this.walking) {
         this.walking = walking;
         this.speed = newSpeed;
-    }
-
-    #highlightCurrentPosition() {
-        this.edge.setColor(0xff0000, 0xff0000, 1);
-        this.vertex.setColor(0x0000FF, 0x0000FF, 1);
-        const otherVertex = this.edge.getOtherVertex(this.vertex);
-        if(otherVertex) otherVertex.setColor(0xFFFF00, 0xFFFF00, 1);
-    }
-
-    #unhighlightCurrentPosition() {
-        this.edge.setColor();
-        this.vertex.setColor();
-        const otherVertex = this.edge.getOtherVertex(this.vertex);
-        if(otherVertex) otherVertex.setColor();
     }
 
     switchEdge(direction = 1) {
@@ -91,6 +79,25 @@ export default class Mouse {
         this.edge = edge;
         this.#highlightCurrentPosition();
     }
+
+    #directionToTargetVertex() {
+        return new THREE.Vector3().subVectors(this.edge.getOtherVertex(this.vertex).projectedVector, this.position).normalize();
+    }
+
+    #highlightCurrentPosition() {
+        this.edge.setColor(0xff0000, 0xff0000, 1);
+        this.vertex.setColor(0x0000FF, 0x0000FF, 1);
+        const otherVertex = this.edge.getOtherVertex(this.vertex);
+        if(otherVertex) otherVertex.setColor(0xFFFF00, 0xFFFF00, 1);
+    }
+
+    #unhighlightCurrentPosition() {
+        this.edge.setColor();
+        this.vertex.setColor();
+        const otherVertex = this.edge.getOtherVertex(this.vertex);
+        if(otherVertex) otherVertex.setColor();
+    }
+
 
     #loadModel(size, position = [0, 0, 0]) {
         const loader = new GLTFLoader();

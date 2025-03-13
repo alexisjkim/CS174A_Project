@@ -7,12 +7,11 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
  */
 export default class Cheese {
     // create tesseract
-    constructor(cheeseList, edge, camera, size = 0.2, positionOnEdge = 0.5, eatableTolerance = 0.2) {
-        this.camera = camera;
+    constructor(cheeseList, edge, size = 0.2, positionOnEdge = 0.5, eatableTolerance = 0.2) {
         this.cheeseList = cheeseList;
         this.edge = edge;
         this.edge.addCheese(this); // insert self into edge
-        this.position = this.edge.getCoords(this.edge.vertex1, positionOnEdge, camera); // place halfway along edge
+        this.position = this.edge.getCoords(this.edge.vertex1, positionOnEdge); // place halfway along edge
         this.eatableTolerance = eatableTolerance;
 
         // create a temporary mesh to join it to
@@ -26,7 +25,7 @@ export default class Cheese {
     }
 
     updateMesh() {
-        this.position = this.edge.getCoords(this.edge.vertex1, 0.5, this.camera); // place halfway along edge
+        this.position = this.edge.getCoords(this.edge.vertex1, 0.5); // place halfway along edge
         this.mesh.position.copy(this.position);
     }
 

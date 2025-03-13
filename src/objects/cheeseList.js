@@ -5,8 +5,8 @@ export default class CheeseList {
         this.cheeses = [];
         this.mesh = new THREE.Group();
         this.eaten = 0;
-        this.eatenCounter = eatenCounter;
-        this.remainingCounter = remainingCounter;
+        this.eatenCounter = null;
+        this.remainingCounter = null;
     }
 
     update() {
@@ -31,8 +31,18 @@ export default class CheeseList {
         this.#updateCheeseDisplay();
     }
 
+    linkDisplay(eatenCounter, remainingCounter) {
+        this.eatenCounter = eatenCounter;
+        this.remainingCounter = remainingCounter;
+        this.#updateCheeseDisplay();
+    }
+
     #updateCheeseDisplay() {
-        this.remainingCounter.innerText = `Cheese Remaining: ${this.cheeses.length}`;
-        this.eatenCounter.innerText = `Cheese Eaten: ${this.eaten}`;
+        if(this.remainingCounter) {
+            this.remainingCounter.innerText = `Cheese Remaining: ${this.cheeses.length}`;
+        }
+        if(this.eatenCounter) {
+            this.eatenCounter.innerText = `Cheese Eaten: ${this.eaten}`;
+        }
     }
 }

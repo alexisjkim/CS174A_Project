@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import Edge from './edge';
 import Vertex from './vertex';
+import { project4DTo3D } from '../utils';
 
 /** Tesseract
  * 
@@ -63,6 +64,14 @@ export default class Tesseract {
         return this.edges[Math.floor(Math.random()*32)];
     }
 
+    getPosition() {
+        const center4D = new THREE.Vector4(0, 0, 0, 0);
+        center4D.applyMatrix4(this.transformationMatrix4D);
+        const center3D = project4DTo3D(center4D, this.camera);
+        center3D.applyMatrix4(this.transformationMatrix3D);
+        return center3D;
+    }
+
     #createMesh(params) {
         const mesh = new THREE.Group(); // collection of cylinders and spheres
         const { edgeLength, edgeRadius, edgeColor, vertexRadius, vertexColor } = params;
@@ -94,7 +103,7 @@ export default class Tesseract {
                     const vertex2 = this.vertices[j];
 
                     // new edge from adjacent vertices
-                    const newEdge = new Edge(vertex1, vertex2, edgeRadius, edgeColor, this.camera); 
+                    const newEdge = new Edge(vertex1, vertex2, edgeRadius, edgeColor); 
                     this.edges.push(newEdge);
                     mesh.add(newEdge.mesh);
 
