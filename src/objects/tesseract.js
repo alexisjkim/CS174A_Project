@@ -9,24 +9,42 @@ import Vertex from './vertex';
  */
 export default class Tesseract {
     // create tesseract
-    constructor(length, camera, meshParams) {
-        // member vars
-        this.length = length;
+    constructor(camera, meshParams) {
+        // objects
+        this.camera = camera;
         this.vertices = [];
         this.edges = [];
-        this.camera = camera;
+
+        // matrices store 4d and 3d transformations to the tesseract
+        this.transformationMatrix4D = new THREE.Matrix4();
+        this.transformationMatrix3D = new THREE.Matrix4();
+        
         this.wireframeGeometry = new THREE.BufferGeometry();
-        this.showMesh = true; // else display wireframe
         this.mesh = this.#createMesh(meshParams);
+        this.showMesh = true; // else display wireframe
     }
 
-    rotate(rotationAngle) {
-        // rotate vertices
-        this.vertices.forEach(vertex => vertex.rotate(rotationAngle));
+    // state only changes when update is explicitly called
+    update() {
+        this.vertices.forEach(vertex => {
+            vertex.apply4DTransformation(this.transformationMatrix4D);
+            //vertex.projectTo3D(this.projectionMatrix);
+            vertex.projectTo3D(this.camera);
+            vertex.apply3DTransformation(this.transformationMatrix3D);
+            vertex.updateMesh();
+        });
+        this.edges.forEach(edge => {
+            edge.updateMesh(this.camera);
+        })
+    }
+    
+    /* Apply transformations to the tesseract in 4D and 3D */
+    apply4DTransformation(matrix) {
+        this.transformationMatrix4D.copy(matrix);
+    }
 
-        // update meshes for vertices and edges
-        this.vertices.forEach(vertex => vertex.updateMesh(this.camera));
-        this.edges.forEach(edge => edge.updateMesh(this.camera));
+    apply3DTransformation(matrix) {
+        this.transformationMatrix3D.copy(matrix);
     }
 
     toggleVisibility() {
@@ -47,16 +65,16 @@ export default class Tesseract {
 
     #createMesh(params) {
         const mesh = new THREE.Group(); // collection of cylinders and spheres
-        const { edgeRadius, edgeColor, vertexRadius, vertexColor } = params;
+        const { edgeLength, edgeRadius, edgeColor, vertexRadius, vertexColor } = params;
         
         // create 16 vertices, with 4D coords
         for(let i = 0; i < 16; i++) {
             const newVertex = new Vertex(
                 // coordinates
-                (i&8) ? this.length/2 : -this.length/2,
-                (i&4) ? this.length/2 : -this.length/2,
-                (i&2) ? this.length/2 : -this.length/2,
-                (i&1) ? this.length/2 : -this.length/2,
+                (i&8) ? edgeLength/2 : -edgeLength/2,
+                (i&4) ? edgeLength/2 : -edgeLength/2,
+                (i&2) ? edgeLength/2 : -edgeLength/2,
+                (i&1) ? edgeLength/2 : -edgeLength/2,
                 i, 
                 vertexRadius, 
                 vertexColor,

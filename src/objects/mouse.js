@@ -2,14 +2,13 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
 export default class Mouse {
-    constructor(startEdge, camera, speed = 1, size = 0.2) {  
+    constructor(startEdge, speed = 1, size = 0.2) {  
         // objects
-        this.camera = camera;
         this.edge = startEdge; // start on a provided edge
         this.vertex = this.edge.vertex1; // start on the edge's fist vertex
 
         // state
-        this.position = this.vertex.getCoords(camera);
+        this.position = this.vertex.projectedVector;
         this.offset = 0; // offset from vertex, 0 - 1
         this.nextEdgeIndex = 0;
         this.speed = speed; // units per sec, neg is backwards
@@ -48,7 +47,7 @@ export default class Mouse {
             }
         }
         // update based on offset
-        this.position = this.edge.getCoords(this.vertex, this.offset, this.camera);
+        this.position = this.edge.getCoords(this.vertex, this.offset);
         this.edge.checkCheeses(this.position);
         this.updateMesh();
     }

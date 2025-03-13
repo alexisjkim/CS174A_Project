@@ -66,6 +66,46 @@ function createCameraBasis4D(cameraPosition4D) {
     return projectedVector;
 }
 
+function createProjectionMatrix(camera) {
+    let cameraPosition4D = camera.position4D; // seperate vector representing cameras position in 4d (so we dont need homogeneous matrices)
+    let cameraBasis4D = camera.basis4D; // matrix representing camera coordinate system
+
+    // translate based ond camera position, and use inverse of basis
+    let cameraTransformationMatrix = new THREE.Matrix4();
+    cameraTransformationMatrix.identity()
+        .makeTranslation(-cameraPosition4D.x, -cameraPosition4D.y, -cameraPosition4D.z)
+        .multiply(new THREE.Matrix4().copy(cameraBasis4D).invert()); // Inverse of camera basis
+
+    // create actual projection matrix
+    let projectionMatrix = new THREE.Matrix4();
+
+    if (camera.usePerspective4D) {
+        // perspective, with depth factor
+        let depthFactor = camera.depth4D;
+        
+        projectionMatrix.set(
+            1, 0, 0, 0, 
+            0, 1, 0, 0, 
+            0, 0, 1, 0, 
+            0, 0, -1 / depthFactor, 1 
+        );
+    } else {
+        // orthographic
+        projectionMatrix.set(
+            1, 0, 0, 0, 
+            0, 1, 0, 0, 
+            0, 0, 1, 0, 
+            0, 0, 0, 1  
+        );
+    }
+
+    // Combine the camera transformation with the projection matrix
+    projectionMatrix.multiply(cameraTransformationMatrix);
+
+    return projectionMatrix;
+}
+
+
 
 // Given a matrix of 4d vectors, rotate each one around the ZW axis by theta radians
 
@@ -155,4 +195,4 @@ function createStars(size, color, number, minDistance, maxDistance) {
     return new THREE.Points(starGeometry, starMaterial);
 }
 
-export { createAxisLine, createCameraBasis4D, project4DTo3D, rotateZW, createCylinder, updateCylinder, createSphere, createStars, createAxes };
+export { createAxisLine, createCameraBasis4D, project4DTo3D, rotateZW, createCylinder, updateCylinder, createSphere, createStars, createAxes, createProjectionMatrix };
