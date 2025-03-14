@@ -36,8 +36,6 @@ export default class Cheese {
     }
 
     eat() {
-        console.log("nom nom");
-
         if (this.sound) {
             this.sound.play();
         }

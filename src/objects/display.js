@@ -5,7 +5,7 @@ export default class Display {
         /* Link Buttons */
 
         // navigate to screens
-        document.getElementById("start-btn").addEventListener("click", () => this.showScreen("game-screen"));
+        document.getElementById("start-btn").addEventListener("click", () => this.startGame());
         document.getElementById("settings-btn").addEventListener("click", () => this.showScreen("settings-screen"));
         document.getElementById("controls-btn").addEventListener("click", () => this.showScreen("controls-screen"));
         document.getElementById("next-level-btn").addEventListener("click", () => this.nextLevel());
@@ -22,14 +22,13 @@ export default class Display {
     
         // Show the selected screen
         document.getElementById(screenId).style.display = "flex";
-
-        // game screen
-        if(screenId == "game-screen") {
-            this.game.startLevel(0);
-        }
     }
     
     // Event listeners for navigation
+    startGame() {
+        this.showScreen("game-screen");
+        this.game.startLevel(0);
+    }
     
     nextLevel() {
         this.showScreen("game-screen");

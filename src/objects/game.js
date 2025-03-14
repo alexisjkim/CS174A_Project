@@ -88,8 +88,6 @@ export default class Game {
             this.cheeseList.addCheese(new Cheese(this.cheeseList, edge));
         }
 
-        console.log(this.cheeseList.length);
-
         // start timer
         this.timer = level.time;
         console.log("")

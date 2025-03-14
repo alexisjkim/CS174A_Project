@@ -36,7 +36,6 @@ export default class CheeseList {
         }
         this.#updateCheeseDisplay();
 
-        console.log(this.cheeses.length);
         if(this.cheeses.length == 0) {
             this.game.finishLevel();
         }
