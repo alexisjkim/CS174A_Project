@@ -4,18 +4,22 @@ import CheeseList from "./cheeseList";
 import Cheese from "./cheese";
 
 export default class Game {
-    constructor(solarSystem, camera) {
+    constructor(solarSystem, camera, display) {
         // objects
         this.camera = camera;
         this.solarSystem = solarSystem;
         this.mouse = null;
-        this.cheeseList = new CheeseList();
+        this.cheeseList = new CheeseList(this);
         this.mesh = this.#createMesh();
 
         // game state
         this.levels = [];
         this.timer = null;
 
+    }
+
+    setDisplay(display) {
+        this.display = display;
     }
 
     // update game state every frame
@@ -58,6 +62,14 @@ export default class Game {
             vector: new THREE.Vector3(-5, 3, 0)
         }
         this.camera.follow(level.planet, offset);
+    }
+
+    nextLevel() {
+        this.startLevel(this.level+1);
+    }
+
+    finishLevel() {
+        this.display.showScreen("finish-level-screen");
     }
 
     // TEMP.. eventually be able to tune levels prob

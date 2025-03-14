@@ -8,6 +8,7 @@ export default class Display {
         document.getElementById("start-btn").addEventListener("click", () => this.showScreen("game-screen"));
         document.getElementById("settings-btn").addEventListener("click", () => this.showScreen("settings-screen"));
         document.getElementById("controls-btn").addEventListener("click", () => this.showScreen("controls-screen"));
+        document.getElementById("next-level-btn").addEventListener("click", () => this.nextLevel());
         document.querySelectorAll(".back-to-home").forEach(button => {
             button.addEventListener("click", () => this.showScreen("home-screen"));
         });
@@ -30,4 +31,8 @@ export default class Display {
     
     // Event listeners for navigation
     
+    nextLevel() {
+        console.log("next!");
+        this.game.nextLevel();
+    }
 }

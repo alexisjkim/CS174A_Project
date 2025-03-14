@@ -110,6 +110,7 @@ game.createLevel({
 
 
 const display = new Display(game);
+game.setDisplay(display);
 // const display = {
 //     cheeseEaten: document.getElementById('cheese-eaten'),
 //     cheeseRemaining: document.getElementById('cheese-remaining')

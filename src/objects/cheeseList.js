@@ -1,7 +1,8 @@
 import * as THREE from 'three';
 
 export default class CheeseList {
-    constructor(eatenCounter, remainingCounter) {
+    constructor(game, eatenCounter, remainingCounter) {
+        this.game = game;
         this.cheeses = [];
         this.mesh = new THREE.Group();
         this.eaten = 0;
@@ -34,6 +35,10 @@ export default class CheeseList {
             this.eaten++;
         }
         this.#updateCheeseDisplay();
+
+        if(this.cheeses.length == 0) {
+            this.game.finishLevel();
+        }
     }
 
     linkDisplay(eatenCounter, remainingCounter) {
