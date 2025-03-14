@@ -23,6 +23,8 @@ export default class Display {
         document.getElementById("dec-dimension").addEventListener("click", () => this.changeDimension(-1));
         document.getElementById("inc-rotation").addEventListener("click", () => this.changeRotation(1));
         document.getElementById("dec-rotation").addEventListener("click", () => this.changeRotation(-1));
+        document.getElementById("inc-size").addEventListener("click", () => this.changeSize(1));
+        document.getElementById("dec-size").addEventListener("click", () => this.changeSize(-1));
     }
 
     showScreen(screenId) {
@@ -61,6 +63,11 @@ export default class Display {
     changeRotation(change) {
         console.log(change);
         this.sandbox.changeRotation(this.sandbox.animParams.rotationNumber + change)
+    }
+
+    changeSize(change) {
+        console.log(change);
+        this.sandbox.changeEdgeLength(this.sandbox.params.edgeLength + change)
     }
     
     

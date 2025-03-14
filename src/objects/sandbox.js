@@ -81,6 +81,15 @@ export default class Sandbox {
         this.animParams.rotationNumber = number;
     }
 
+
+    changeEdgeLength(number) {
+        this.params.edgeLength = number;
+        this.mesh.remove(this.hypercube.mesh);
+        console.log("new cube", this.dimension, this.camera, this.params);
+        this.hypercube = new Hypercube(this.dimension, this.camera, this.params)
+        this.mesh.add(this.hypercube.mesh);
+    }
+
     rotate(timeDelta) {
         // get angle of rotation
         this.animParams.rotationTime += timeDelta;
