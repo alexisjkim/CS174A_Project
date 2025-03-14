@@ -140,7 +140,6 @@ function animate() {
 let forwardWalkStarted = false;
 let backwardWalkStarted = false;
 document.addEventListener("keydown", (event) => {
-    console.log(event)
     switch (event.key) {
         case "v":
             //   hypercube.toggleVisibility();

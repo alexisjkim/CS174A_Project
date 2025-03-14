@@ -11,6 +11,7 @@ export default class Game {
         this.mouse = null;
         this.cheeseList = new CheeseList(this);
         this.mesh = this.#createMesh();
+        this.level = 0;
 
         // game state
         this.levels = [];
@@ -24,10 +25,8 @@ export default class Game {
 
     // update game state every frame
     update(timeDelta) {
-        if(this.mouse) {
-            this.mouse.walk(timeDelta);
-            this.mouse.update();
-        }
+        if(this.mouse) this.mouse.walk(timeDelta);
+        if(this.mouse) this.mouse.update();
         if(this.cheeseList) {
             this.cheeseList.update();
         }
@@ -40,7 +39,22 @@ export default class Game {
     }
 
     startLevel(levelNum) {
-        const level = this.levels[levelNum];
+        if(levelNum < 0 || levelNum >= this.levels.length) {
+            console.log("invalid level number");
+            return;
+        }
+        let level = this.levels[levelNum];
+        if (!level) {
+            console.error("Level data is missing at index:", levelNum);
+            return;
+        }
+        let requiredProps = ["planet", "numCheese", "mouseSpeed", "time"];
+        for (let prop of requiredProps) {
+            if (!level.hasOwnProperty(prop)) {
+                console.error(`Level ${levelNum} is missing property: ${prop}`);
+                return;
+            }
+        }
 
         // insert mouse
         this.mouse = new Mouse(level.planet.hypercube.randomEdge(), level.mouseSpeed);
@@ -52,6 +66,8 @@ export default class Game {
             const edge = level.planet.hypercube.randomEdge();
             this.cheeseList.addCheese(new Cheese(this.cheeseList, edge));
         }
+
+        console.log(this.cheeseList.length);
 
         // start timer
         this.timer = level.startTime;
@@ -65,7 +81,11 @@ export default class Game {
     }
 
     nextLevel() {
-        this.startLevel(this.level+1);
+        this.level += 1;
+        this.mouse.hideMouse();
+        this.mesh.remove(this.mouse);
+        delete this.mouse;
+        this.startLevel(this.level);
     }
 
     finishLevel() {

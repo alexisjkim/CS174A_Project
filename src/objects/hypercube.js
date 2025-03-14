@@ -69,7 +69,7 @@ export default class Hypercube {
     }
 
     randomEdge() {
-        return this.edges[Math.floor(Math.random()*32)];
+        return this.edges[Math.floor(Math.random() * this.dimension * Math.pow(2, this.dimension - 1))];
     }
 
     getPosition() {

@@ -25,14 +25,14 @@ export default class Display {
 
         // game screen
         if(screenId == "game-screen") {
-            this.game.startLevel(1);
+            this.game.startLevel(0);
         }
     }
     
     // Event listeners for navigation
     
     nextLevel() {
-        console.log("next!");
+        this.showScreen("game-screen");
         this.game.nextLevel();
     }
 }

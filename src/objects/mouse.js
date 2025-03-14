@@ -70,7 +70,8 @@ export default class Mouse {
         // find next edge
         let edge;
         do {
-            this.nextEdgeIndex = ((this.nextEdgeIndex + 1 * direction) % 4 + 4) % 4;
+            let d = this.vertex.getDimension();
+            this.nextEdgeIndex = ((this.nextEdgeIndex + 1 * direction) % d + d) % d;
             edge = this.vertex.getEdge(this.nextEdgeIndex);
         } while (edge == this.edge);
 

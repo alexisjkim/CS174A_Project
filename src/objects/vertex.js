@@ -44,6 +44,10 @@ export default class Vertex {
         return this.edges[index];
     }
 
+    getDimension() {
+        return this.edges.length;
+    }
+
     // customize color of an edge, call with no params to reset to original color
     setColor(color = this.baseColor, glowColor = "0x000000", glowIntensity = 0) {
         this.mesh.material.color.set(color);
