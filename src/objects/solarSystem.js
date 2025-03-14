@@ -45,7 +45,6 @@ export default class SolarSystem {
         orbitTime = 0,
         orbitDistance = 10,
         orbitSpeed = 0.25,
-        numCheese = 1,
         edgeLength = 4,
         edgeRadius = 0.05,
         edgeColor = new THREE.Color(0x85f73e),
@@ -71,7 +70,6 @@ export default class SolarSystem {
             rotationTime,
         });
 
-        planet.createCheese(numCheese);
         this.planets.push(planet);
         this.mesh.add(planet.mesh);
         

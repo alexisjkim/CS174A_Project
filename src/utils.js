@@ -1,4 +1,6 @@
 import * as THREE from "three";
+import MatrixN from "./objects/matrixN";
+import VectorN from "./objects/vectorN";
 
 // creates an axis line with color from start to end
 function createAxisLine(color, start, end) {
@@ -35,40 +37,50 @@ function createAxes(length, xColor, yColor, zColor) {
 
 
 
-/** Given a 4d vector, return its perspective or orthographic projection onto 3d.
- * vector4D: Initial vector
- * cameraPosition: position of 3d axis in 4d space
- * cameraMatrix: matrix that transforms to camera basis
- * d: depth factor (only perspective projection)
- * perspective: use perspective or orthographic projection
- */
-function project4DTo3D(vector4D, camera) {
-    // transform 4d vector by subtracting camera position and multiplying by the inverse of the cameraBasis
-    let transformedVector = new THREE.Vector4().subVectors(
-        vector4D,
-        camera.position4D
-    );
-    let inverseCameraBasis = new THREE.Matrix4().copy(camera.basis4D).invert();
-    transformedVector.applyMatrix4(inverseCameraBasis);
-    let projectedVector;
-
-    // project to 3d, with perspective or orthographic projection
-    let { x, y, z, w } = transformedVector;
-    let scaleFactor;
-    if (camera.usePerspective4D) {
-        // perspective projection: x', y', z' = x/w, y/w, z/w
-        scaleFactor = w / camera.depth4D;
-    } else {
-        // orthographic projection: divide by camera distance
-        scaleFactor = camera.position4D.w;
+function projectNDto3D(vectorN, camera) {
+    const N = vectorN.size;
+    const cameraND = camera.getCameraND(N);
+    if(!cameraND) {
+        console.error("Failed to project to 3D, did not find an N-th dimensional camera");
     }
-    if (scaleFactor === 0) scaleFactor = 1e-6; // no div by zero
-    projectedVector = new THREE.Vector3(
-        x / scaleFactor,
-        y / scaleFactor,
-        z / scaleFactor
+
+    // transform vectr based on camera's position in n-dimensions
+    const transformedVector = vectorN.clone().subtract(cameraND.position);
+
+    // apply inverse camera basis
+    let inverseCameraBasis = cameraND.basis.clone().invert();
+    transformedVector.applyMatrixN(inverseCameraBasis); // Custom function for N-D matrix-vector multiplication
+
+     // define a forward vector as first column of basis
+    let forwardVector = new VectorN(N);
+    for (let i = 0; i < N; i++) {
+        forwardVector.set(i, cameraND.basis.get(i, N-1));
+    }
+
+    // compute depth along the forward direction, by using the vectors projection onto the forward vector
+    let depthComponent = transformedVector.dot(forwardVector);
+    let scaleFactor = 1; // Default scale for orthographic
+
+    if (cameraND.usePerspective) {
+        scaleFactor = depthComponent / cameraND.depth; // perspective scaling
+    }
+
+    if (Math.abs(scaleFactor) < 1e-6) scaleFactor = 1e-6; // dont divide by zero
+    
+    // Step 4: Extract the first three spatial components for 3D projection
+    let projectedVector = new THREE.Vector3(
+        transformedVector.get(0) / scaleFactor,
+        transformedVector.get(1) / scaleFactor,
+        transformedVector.get(2) / scaleFactor
     );
 
+    const v = new THREE.Vector4(
+        vectorN.get(0),
+        vectorN.get(1),
+        vectorN.get(2),
+        vectorN.get(3)
+    );
+    
     return projectedVector;
 }
 
@@ -90,18 +102,41 @@ function rotationMatrixY(theta) {
     );
 }
 
-function rotationMatrixZW(theta) {
-    let cos = Math.cos(theta);
-    let sin = Math.sin(theta);
 
-    // Create a rotation matrix for the XY plane
-    return new THREE.Matrix4().set(
-        1, 0, 0, 0,
-        0, 1, 0, 0,
-        0, 0, cos, -sin,
-        0, 0, sin, cos
-    );
+// function rotationMatrixZW(theta) {
+//     let cos = Math.cos(theta);
+//     let sin = Math.sin(theta);
+
+//     // Create a rotation matrix for the XY plane
+//     return new THREE.Matrix4().set(
+//         1, 0, 0, 0,
+//         0, 1, 0, 0,
+//         0, 0, cos, -sin,
+//         0, 0, sin, cos
+//     );
+// }
+
+// create a rotation matrix along axis i  & j, for an nxn matrix.
+function createRotationMatrixN(n, i, j, theta) {
+    // Create an identity matrix of size n x n
+    if(i >= n || j >= n) {
+        console.warn(`tried to rotate an ${n}x${n} matrix around an axes ${i} and ${j}`);
+        return null;
+    }
+    let matrix = new MatrixN(n);
+
+    // Set rotation values in the i-j plane
+    let cosTheta = Math.cos(theta);
+    let sinTheta = Math.sin(theta);
+
+    matrix.elements[i][i] = cosTheta;
+    matrix.elements[j][j] = cosTheta;
+    matrix.elements[i][j] = -sinTheta;
+    matrix.elements[j][i] = sinTheta;
+
+    return matrix;
 }
+
 
 // create cylinder along an edge
 function createCylinder(start, end, radius, color) {
@@ -197,16 +232,16 @@ function onWindowResize(camera, renderer) {
 }
 
 export {
-    project4DTo3D,
+    projectNDto3D,
     translationMatrix,
     rotationMatrixY,
-    rotationMatrixZW,
     createCylinder,
     updateCylinder,
     createSphere,
     createStars,
     createAxes,
     onWindowResize,
+    createRotationMatrixN,
 };
 
 

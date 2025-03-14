@@ -1,7 +1,9 @@
 import * as THREE from 'three';
 import Edge from './edge';
 import Vertex from './vertex';
-import { project4DTo3D } from '../utils';
+import { projectNDto3D } from '../utils';
+import MatrixN from './matrixN';
+import VectorN from './vectorN';
 
 /** hypercube
  * 
@@ -17,7 +19,8 @@ export default class Hypercube {
         this.edges = [];
 
         // matrices store 4d and 3d transformations to the hypercube
-        this.transformationMatrix4D = new THREE.Matrix4(); // need something else for other dimensions?
+        this.dimension = dimension;
+        this.transformationMatrixND = new MatrixN(dimension);
         this.transformationMatrix3D = new THREE.Matrix4();
         
         this.wireframeGeometry = new THREE.BufferGeometry();
@@ -28,8 +31,7 @@ export default class Hypercube {
     // state only changes when update is explicitly called
     update() {
         this.vertices.forEach(vertex => {
-            vertex.apply4DTransformation(this.transformationMatrix4D);
-            //vertex.projectTo3D(this.projectionMatrix);
+            vertex.applyNDTransformation(this.transformationMatrixND);
             vertex.projectTo3D(this.camera);
             vertex.apply3DTransformation(this.transformationMatrix3D);
             vertex.updateMesh();
@@ -40,11 +42,11 @@ export default class Hypercube {
     }
     
     /* Apply transformations to the hypercube in 4D and 3D */
-    apply4DTransformation(matrix) {
-        this.transformationMatrix4D.multiply(matrix);
+    applyNDTransformation(matrix) {
+        this.transformationMatrixND.multiply(matrix);
     }
-    copy4DTransformation(matrix) {
-        this.transformationMatrix4D.copy(matrix);
+    copyNDTransformation(matrix) {
+        this.transformationMatrixND.copy(matrix);
     }
 
     apply3DTransformation(matrix) {
@@ -71,56 +73,77 @@ export default class Hypercube {
     }
 
     getPosition() {
-        const center4D = new THREE.Vector4(0, 0, 0, 0);
-        center4D.applyMatrix4(this.transformationMatrix4D);
-        const center3D = project4DTo3D(center4D, this.camera);
+        const center4D = new VectorN(4);
+        center4D.applyMatrixN(this.transformationMatrixND);
+        const center3D = projectNDto3D(center4D, this.camera);
         center3D.applyMatrix4(this.transformationMatrix3D);
         return center3D;
     }
 
     #createMesh(dimension, params) {
-        // DO SOMETHING WITH DIMENSION
-
         const mesh = new THREE.Group(); // collection of cylinders and spheres
         const { edgeLength, edgeRadius, edgeColor, vertexRadius, vertexColor } = params;
         
-        // create 16 vertices, with 4D coords
-        for(let i = 0; i < 16; i++) {
+        // create N*N vertices, represented with N-d Vectors
+        this.#generateVertices(dimension, edgeLength, vertexRadius, vertexColor, mesh);
+
+        // add edges between connected vertices
+        this.#generateEdges(dimension, this.vertices, edgeRadius, edgeColor, mesh);
+
+        return mesh;
+    }
+
+    // generate vertices for an N dimensional hypercube
+    #generateVertices(N, edgeLength, vertexRadius, vertexColor, mesh) {
+        let numVertices = 1 << N; // 2^N vertices
+
+        for (let i = 0; i < numVertices; i++) {
+            let coords = new Array(N).fill(0);
+    
+            // Assign coordinates based on bitwise operations
+            for (let j = 0; j < N; j++) {
+                coords[j] = (i & (1 << j)) ? edgeLength / 2 : -edgeLength / 2;
+            }
+    
+            // Create a VectorN (assuming it can take an array of values)
+            let vector = new VectorN(N, coords);
+    
+            // Create and store the vertex
             const newVertex = new Vertex(
-                // coordinates
-                (i&8) ? edgeLength/2 : -edgeLength/2,
-                (i&4) ? edgeLength/2 : -edgeLength/2,
-                (i&2) ? edgeLength/2 : -edgeLength/2,
-                (i&1) ? edgeLength/2 : -edgeLength/2,
+                vector,  // Pass the VectorN object
                 i, 
                 vertexRadius, 
                 vertexColor,
                 this.camera
-            )
+            );
+    
             this.vertices.push(newVertex);
             mesh.add(newVertex.mesh);
         }
-        
-        // add edges between connected vertices
-        for(let i = 0; i < 15; i++) {
-            for(let j = i+1; j < 16; j++) {
-                let diff = i ^ j;  // XOR to find differing bits
-                // if only one bit is different, the two vertices should be connected with an edge
-                if ((diff & (diff - 1)) === 0) {                     
-                    const vertex1 = this.vertices[i];
-                    const vertex2 = this.vertices[j];
+    }
 
-                    // new edge from adjacent vertices
+    #generateEdges(N, vertices, edgeRadius, edgeColor, mesh) {
+        let numVertices = 1 << N; // 2^N vertices
+    
+        for (let i = 0; i < numVertices; i++) {
+            for (let j = i + 1; j < numVertices; j++) {
+                let diff = i ^ j;  // find all bits that differ
+    
+                // if only one bit differs, they're adjacent vertices
+                if ((diff & (diff - 1)) === 0) {                     
+                    const vertex1 = vertices[i];
+                    const vertex2 = vertices[j];
+    
+                    // Create a new edge
                     const newEdge = new Edge(vertex1, vertex2, edgeRadius, edgeColor); 
                     this.edges.push(newEdge);
                     mesh.add(newEdge.mesh);
-
-                    // add edge to the connected vertices
+    
+                    // Add edge to the connected vertices
                     vertex1.addEdge(newEdge);
                     vertex2.addEdge(newEdge);
                 }
             }
         }
-        return mesh;
-    }
+    }   
 }

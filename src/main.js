@@ -1,13 +1,11 @@
 import * as THREE from 'three';
-import {  createAxes, createStars, onWindowResize, rotationMatrixY, rotationMatrixZW, translationMatrix } from './utils';
-import Hypercube from './objects/hypercube';
-import Cheese from './objects/cheese';
-import Mouse from './objects/mouse';
+import { createStars, onWindowResize } from './utils';
 import Camera from './objects/camera';
-import CheeseList from './objects/cheeseList';
 import SolarSystem from './objects/solarSystem';
 import Game from './objects/game';
 import Display from './objects/display';
+import VectorN from './objects/vectorN';
+import MatrixN from './objects/matrixN';
 
 
 /* SET UP THE SCENE */ 
@@ -23,6 +21,18 @@ document.body.appendChild( renderer.domElement );
 let camera = new Camera(renderer, 1, true);
 const cameraInitialOffset = new THREE.Vector3(0, 2, 10);
 camera.follow(null, cameraInitialOffset, "reposition"); // position camera at initial offset, looking at origin
+
+const position5D = new VectorN(4, [0, 0, 0, 0, 5]);
+const basis5D = new MatrixN(5);
+camera.setCameraND(4, position5D, basis5D);
+
+const position4D = new VectorN(4, [0, 0, 0, 5]);
+const basis4D = new MatrixN(4);
+camera.setCameraND(4, position4D, basis4D);
+
+const position3D = new VectorN(3, [0, 0, 5]);
+const basis3D = new MatrixN(3);
+camera.setCameraND(3, position3D, basis3D);
 
 // lights
 const pointLight = new THREE.PointLight(0xffffff, 100, 100);

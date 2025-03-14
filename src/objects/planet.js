@@ -1,7 +1,5 @@
 import * as THREE from "three";
-import { rotationMatrixY, rotationMatrixZW, translationMatrix } from "../utils";
-import CheeseList from "./cheeseList";
-import Cheese from "./cheese";
+import { createRotationMatrixN, rotationMatrixY, translationMatrix } from "../utils";
 
 export default class Planet {
     constructor(
@@ -10,44 +8,52 @@ export default class Planet {
     ) {
         this.animParams = animParams;
         this.hypercube = hypercube;
-        this.cheeseList = new CheeseList();
         this.mesh = this.#createMesh();
 
         this.position = this.hypercube.getPosition();
         this.direction = this.#directionToOrigin();
     }
 
+    // update state of planet's hypercube, and planets position/direciton vectors
     update() {
-        this.cheeseList.update();
         this.hypercube.update();
         this.position = this.hypercube.getPosition();
         this.direction = this.#directionToOrigin();
     }
 
+    // rotate the hypercube along a plane in n-dimensions
     rotate(timeDelta) {
+        // get angle of rotation
         this.animParams.rotationTime += timeDelta;
-        let modelTransform4D = new THREE.Matrix4();
-        modelTransform4D.multiply(
-            rotationMatrixZW(2 * this.animParams.cubeRotationSpeed * Math.PI * this.animParams.rotationTime)
-        );
-        this.hypercube.copy4DTransformation(modelTransform4D);
+        const angle = 2 * this.animParams.cubeRotationSpeed * Math.PI * this.animParams.rotationTime;
+        
+        // rotate around a plane
+        let modelTransformND = createRotationMatrixN(
+            this.hypercube.dimension,
+            this.hypercube.dimension - 1,
+            this.hypercube.dimension - 2,
+            angle
+        ); 
+        
+        // apply that transformation matrix to the tesseract
+        this.hypercube.copyNDTransformation(modelTransformND);
     }
 
+    // orbits around (0, 0, 0)
     orbit(timeDelta) {
-        // orbits around (0, 0, 0)
         this.animParams.orbitTime += timeDelta;
         let modelTransform3D = new THREE.Matrix4();
+
+        // transformation matrix translates to orbit distance, then rotates based on speed
         modelTransform3D.premultiply(
             translationMatrix(this.animParams.orbitDistance, 0, 0)
         );
         modelTransform3D.premultiply(
             rotationMatrixY(this.animParams.orbitSpeed * this.animParams.orbitTime)
         );
-        this.hypercube.copy3DTransformation(modelTransform3D);
-    }
 
-    createCheese(numCheese) {
-        
+        // apply transformation matrix to hypercube
+        this.hypercube.copy3DTransformation(modelTransform3D);
     }
 
     #directionToOrigin() {
@@ -59,7 +65,6 @@ export default class Planet {
     #createMesh() {
         const mesh = new THREE.Group();
         mesh.add(this.hypercube.mesh);
-        mesh.add(this.cheeseList.mesh);
         return mesh;
     }
 }

@@ -1,17 +1,17 @@
 import * as THREE from 'three';
-import { createSphere, project4DTo3D } from '../utils';
+import { createSphere, projectNDto3D } from '../utils';
 
 export default class Vertex {
 
-    constructor(x, y, z, w, index, radius, color, camera) {
+    constructor(vector, index, radius, color, camera) {
         this.index = index;
         this.edges = []; // store edges connected to this vertex
-        this.baseVector = new THREE.Vector4(x, y, z, w);
+        this.baseVector = vector;
         this.transformedVector = this.baseVector.clone();
-        this.projectedVector = project4DTo3D(this.transformedVector, camera);
+        this.projectedVector = projectNDto3D(this.transformedVector, camera);
         
         this.baseColor = color;
-        this.mesh = createSphere(project4DTo3D(this.transformedVector, camera), radius, color);
+        this.mesh = createSphere(this.projectedVector, radius, color);
     }
 
     // update mesh in scene
@@ -19,14 +19,14 @@ export default class Vertex {
         this.mesh.position.copy(this.projectedVector);
     }
 
-    /* Transform vertex in 4D, project to 3D, transform in 3D */
-    apply4DTransformation(matrix) {
+    /* Transform vertex in ND, project to 3D, transform in 3D */
+    applyNDTransformation(matrix) {
         this.transformedVector = this.baseVector.clone();
-        this.transformedVector.applyMatrix4(matrix);
+        this.transformedVector.applyMatrixN(matrix);
     }
 
     projectTo3D(camera) {   
-        this.projectedVector = project4DTo3D(this.transformedVector, camera);
+        this.projectedVector = projectNDto3D(this.transformedVector, camera);
     }
 
 

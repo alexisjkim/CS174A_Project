@@ -16,11 +16,11 @@ export default class Camera {
         this.offset = new THREE.Vector3(0, 0, 0); // offset from coi
         this.controlMode = "free";
 
-        // 4D camera
-        this.position4D = new THREE.Vector4(0, 0, 0, 5);
-        this.basis4D = new THREE.Matrix4().identity();
-        this.depth4D = depth4D;
-        this.usePerspective4D = perspective4D;
+        // store a list of cameras in arbitrary dimensions
+        this.camerasND = [];
+        // this.position4D = new THREE.Vector4(0, 0, 0, 5);
+        // this.basis4D = new THREE.Matrix4().identity();
+        // this.usePerspective4D = perspective4D;
 
         // set 3D camera position
         this.camera3D.position.copy(new THREE.Vector3(0, 2, 10)); 
@@ -83,17 +83,51 @@ export default class Camera {
         this.controlMode = controlMode;
     }
 
-    set4D(
-        position,
-        basis,
-        depth = this.depth4D,
-        perspective = this.usePerspective4D
-    ) {
-        this.position4D = position;
-        this.basis4D = basis;
-        this.depth4D = depth;
-        this.usePerspective4D = perspective;
+    getCameraND(N) {
+        let camera = this.camerasND.find(camera => camera.dimension === N);
+        if (camera) {
+            return camera;
+        } else {
+            console.warn(`No camera found for ${N} dimensions.`);
+            return null; // Return null if camera is not found
+        }
     }
+
+    setCameraND(N, position, basis, depth = 1, perspective = true) {
+        let index = this.camerasND.findIndex(camera => camera.dimension === N);
+
+        if (index !== -1) {
+            // replace with new camera if that dimension camera exists
+            this.camerasND[index] = {
+                dimension: N,
+                position: position,
+                basis: basis,
+                depth: depth,
+                usePerspective: perspective,
+            };
+        } else {
+            // otherwise add a new camera for this dimension
+            this.camerasND.push({
+                dimension: N,
+                position: position,
+                basis: basis,
+                depth: depth,
+                usePerspective: perspective,
+            });
+        }
+    }
+
+    // set4D(
+    //     position,
+    //     basis,
+    //     depth = this.depth4D,
+    //     perspective = this.usePerspective4D
+    // ) {
+    //     this.position4D = position;
+    //     this.basis4D = basis;
+    //     this.depth4D = depth;
+    //     this.usePerspective4D = perspective;
+    // }
 
     toggleMousePov() {
         this.useMousePov = !this.useMousePov;
