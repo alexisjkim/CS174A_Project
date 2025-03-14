@@ -77,6 +77,14 @@ button:hover {
     top: 60px;
 }
 
+/* Lost level screen */
+#lost-level-screen {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
 /* CONTROLS SCREEN */
 #controls-screen {
     display: none;

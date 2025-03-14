@@ -67,7 +67,7 @@ scene.add(game.mesh);
 
 /* ADD GAME LEVELS */
 game.createLevel({
-    time: 100000,
+    time: 40,
     planetParams: {
         cubeDimension: 3,
         edgeLength: 1,
@@ -78,7 +78,7 @@ game.createLevel({
     }
 });
 game.createLevel({
-    time: 150000,
+    time: 50,
     planetParams: {
         orbitDistance: 12,
         orbitSpeed: 0.16,
@@ -87,7 +87,7 @@ game.createLevel({
     }
 });
 game.createLevel({
-    time: 100000,
+    time: 60,
     planetParams: {
         cubeDimension: 5,
         orbitDistance: 15,
@@ -97,7 +97,7 @@ game.createLevel({
     }
 });
 game.createLevel({
-    time: 100000,
+    time: 70,
     planetParams: {
         cubeDimension: 6,
         orbitDistance: 20,

@@ -34,4 +34,9 @@ export default class Display {
         this.showScreen("game-screen");
         this.game.nextLevel();
     }
+
+    // lostLevel() {
+    //     this.showScreen("lost-level-screen");
+    //     this.game.lostLevel();
+    // }
 }

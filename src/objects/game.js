@@ -35,6 +35,8 @@ export default class Game {
         }
         if(this.timer)  {
             this.timer -= timeDelta;
+
+            if (this.timer <= 0) this.lostLevel();
         }
 
         this.updateTimerDisplay();
@@ -90,7 +92,6 @@ export default class Game {
 
         // start timer
         this.timer = level.time;
-        console.log("")
 
         // have camera follow this planet
         const offset = { 
@@ -98,6 +99,15 @@ export default class Game {
             vector: new THREE.Vector3(-5, 3, 0)
         }
         this.camera.follow(level.planet, offset);
+    }
+
+    lostLevel() {
+        this.level = 0;
+        this.mouse.hideMouse();
+        this.mesh.remove(this.mouse);
+        delete this.mouse;
+        this.timer = null;
+        this.display.showScreen("lost-level-screen");
     }
 
     nextLevel() {
