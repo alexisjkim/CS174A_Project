@@ -39,6 +39,13 @@ function createAxes(length, xColor, yColor, zColor) {
 
 function projectNDto3D(vectorN, camera) {
     const N = vectorN.size;
+    if(N < 4) {
+        let x = vectorN.get(0) || 0;
+        let y = vectorN.get(1) || 0;
+        let z = vectorN.get(2) || 0;
+        return new THREE.Vector3(x, y, z); 
+    }
+
     const cameraND = camera.getCameraND(N);
     if(!cameraND) {
         console.error("Failed to project to 3D, did not find an N-th dimensional camera");
@@ -66,19 +73,12 @@ function projectNDto3D(vectorN, camera) {
     }
 
     if (Math.abs(scaleFactor) < 1e-6) scaleFactor = 1e-6; // dont divide by zero
-    
+
     // Step 4: Extract the first three spatial components for 3D projection
     let projectedVector = new THREE.Vector3(
         transformedVector.get(0) / scaleFactor,
         transformedVector.get(1) / scaleFactor,
         transformedVector.get(2) / scaleFactor
-    );
-
-    const v = new THREE.Vector4(
-        vectorN.get(0),
-        vectorN.get(1),
-        vectorN.get(2),
-        vectorN.get(3)
     );
     
     return projectedVector;
@@ -101,20 +101,6 @@ function rotationMatrixY(theta) {
         0, 0, 0, 1
     );
 }
-
-
-// function rotationMatrixZW(theta) {
-//     let cos = Math.cos(theta);
-//     let sin = Math.sin(theta);
-
-//     // Create a rotation matrix for the XY plane
-//     return new THREE.Matrix4().set(
-//         1, 0, 0, 0,
-//         0, 1, 0, 0,
-//         0, 0, cos, -sin,
-//         0, 0, sin, cos
-//     );
-// }
 
 // create a rotation matrix along axis i  & j, for an nxn matrix.
 function createRotationMatrixN(n, i, j, theta) {

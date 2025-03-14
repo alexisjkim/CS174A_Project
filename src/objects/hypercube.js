@@ -73,9 +73,9 @@ export default class Hypercube {
     }
 
     getPosition() {
-        const center4D = new VectorN(4);
-        center4D.applyMatrixN(this.transformationMatrixND);
-        const center3D = projectNDto3D(center4D, this.camera);
+        const centerND = new VectorN(this.dimension);
+        centerND.applyMatrixN(this.transformationMatrixND);
+        const center3D = projectNDto3D(centerND, this.camera);
         center3D.applyMatrix4(this.transformationMatrix3D);
         return center3D;
     }

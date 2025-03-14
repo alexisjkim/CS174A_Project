@@ -22,17 +22,18 @@ let camera = new Camera(renderer, 1, true);
 const cameraInitialOffset = new THREE.Vector3(0, 2, 10);
 camera.follow(null, cameraInitialOffset, "reposition"); // position camera at initial offset, looking at origin
 
-const position5D = new VectorN(4, [0, 0, 0, 0, 5]);
+
+const position6D = new VectorN(6, [0, 0, 0, 0, 0, 5]);
+const basis6D = new MatrixN(6);
+camera.setCameraND(6, position6D, basis6D);
+
+const position5D = new VectorN(5, [0, 0, 0, 0, 5]);
 const basis5D = new MatrixN(5);
-camera.setCameraND(4, position5D, basis5D);
+camera.setCameraND(5, position5D, basis5D);
 
 const position4D = new VectorN(4, [0, 0, 0, 5]);
 const basis4D = new MatrixN(4);
 camera.setCameraND(4, position4D, basis4D);
-
-const position3D = new VectorN(3, [0, 0, 5]);
-const basis3D = new MatrixN(3);
-camera.setCameraND(3, position3D, basis3D);
 
 // lights
 const pointLight = new THREE.PointLight(0xffffff, 100, 100);
@@ -81,6 +82,8 @@ scene.add(game.mesh);
 game.createLevel({
     time: 100000,
     planetParams: {
+        cubeDimension: 3,
+        edgeLength: 1,
         orbitDistance: 8,
         orbitSpeed: 0.2,
         cubeRotationSpeed: -0.15,
@@ -99,23 +102,28 @@ game.createLevel({
 game.createLevel({
     time: 100000,
     planetParams: {
+        cubeDimension: 5,
         orbitDistance: 13,
         orbitSpeed: 0.10,
         cubeRotationSpeed: -0.05,
         edgeColor: new THREE.Color(0x00ffff),
     }
 });
+game.createLevel({
+    time: 100000,
+    planetParams: {
+        cubeDimension: 6,
+        orbitDistance: 16,
+        orbitSpeed: 0.08,
+        cubeRotationSpeed: 0.10,
+        edgeColor: new THREE.Color(0xff00ff),
+    }
+});
 
 /* SET UP DISPLAY */
 
 
-const display = new Display(game);
-// const display = {
-//     cheeseEaten: document.getElementById('cheese-eaten'),
-//     cheeseRemaining: document.getElementById('cheese-remaining')
-
-// }
-// solarSystem.linkCheeseDisplay(0, display);
+const display = new Display();
 
 /* ANIMATION */
 
@@ -188,6 +196,13 @@ document.addEventListener("keydown", (event) => {
             vector: new THREE.Vector3(-2, 2, 2)
         }
         camera.follow(solarSystem.getPlanet(0), relativeOffset);
+        game.mouse.showMouse();
+    }  if (event.key === '3') {
+        const relativeOffset = { 
+            type: "relative",
+            vector: new THREE.Vector3(-2, 2, 2)
+        }
+        camera.follow(solarSystem.getPlanet(2), relativeOffset);
         game.mouse.showMouse();
     } if (event.key === 't') {
         game.startLevel(0);
