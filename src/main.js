@@ -17,22 +17,6 @@ renderer.setSize( window.innerWidth, window.innerHeight );
 renderer.setAnimationLoop( animate );
 document.body.appendChild( renderer.domElement );
 
-// camera
-let camera = new Camera(renderer, 1, true);
-const cameraInitialOffset = new THREE.Vector3(0, 2, 10);
-camera.follow(null, cameraInitialOffset, "reposition"); // position camera at initial offset, looking at origin
-
-const position5D = new VectorN(4, [0, 0, 0, 0, 5]);
-const basis5D = new MatrixN(5);
-camera.setCameraND(4, position5D, basis5D);
-
-const position4D = new VectorN(4, [0, 0, 0, 5]);
-const basis4D = new MatrixN(4);
-camera.setCameraND(4, position4D, basis4D);
-
-const position3D = new VectorN(3, [0, 0, 5]);
-const basis3D = new MatrixN(3);
-camera.setCameraND(3, position3D, basis3D);
 
 // lights
 const pointLight = new THREE.PointLight(0xffffff, 100, 100);
@@ -46,41 +30,47 @@ scene.add(directionalLight);
 const ambientLight = new THREE.AmbientLight(0x505050);  // Soft white light
 scene.add(ambientLight);
 
-// axes 
-// const axes = createAxes(5, 0xff0000, 0xffff00, 0x0000ff);
-// scene.add(axes);
+
+// camera
+let camera = new Camera(renderer, 1, true);
+const cameraInitialOffset = new THREE.Vector3(0, 2, 10);
+camera.follow(null, cameraInitialOffset, "reposition"); // position camera at initial offset, looking at origin
+
+// create cameras in each dimension
+const position6D = new VectorN(6, [0, 0, 0, 0, 0, 5]);
+const basis6D = new MatrixN(6);
+camera.setCameraND(6, position6D, basis6D);
+
+const position5D = new VectorN(5, [0, 0, 0, 0, 5]);
+const basis5D = new MatrixN(5);
+camera.setCameraND(5, position5D, basis5D);
+
+const position4D = new VectorN(4, [0, 0, 0, 5]);
+const basis4D = new MatrixN(4);
+camera.setCameraND(4, position4D, basis4D);
+
+
+
+/* SET UP THE WORLD */
 
 // sky
 const stars = createStars(1.5, 0xffffff, 3000, 400, 900);
 scene.add(stars);
 
-
-/* SET UP THE WORLD */
-
 // create solar system
 const solarSystem = new SolarSystem(camera);
 scene.add(solarSystem.mesh);
 
-// // add hypercubes to the system
-// solarSystem.createPlanet();
-// solarSystem.createPlanet({
-//     orbitDistance: 13,
-//     orbitSpeed: 0.15,
-//     cubeRotationSpeed: -0.15,
-//     edgeColor: new THREE.Color(0x00ffff),
-// });
-
-// // add a single mouse, on the first hypercube
-// const mouse = new Mouse(solarSystem.getPlanet(0).hypercube.randomEdge());
-// scene.add(mouse.mesh);
-
-
+// create the game
 const game = new Game(solarSystem, camera);
 scene.add(game.mesh);
 
+/* ADD GAME LEVELS */
 game.createLevel({
     time: 100000,
     planetParams: {
+        cubeDimension: 3,
+        edgeLength: 1,
         orbitDistance: 8,
         orbitSpeed: 0.2,
         cubeRotationSpeed: -0.15,
@@ -90,7 +80,7 @@ game.createLevel({
 game.createLevel({
     time: 150000,
     planetParams: {
-        orbitDistance: 10,
+        orbitDistance: 12,
         orbitSpeed: 0.16,
         cubeRotationSpeed: 0.15,
         edgeColor: new THREE.Color(0x00ff00),
@@ -99,16 +89,26 @@ game.createLevel({
 game.createLevel({
     time: 100000,
     planetParams: {
-        orbitDistance: 13,
+        cubeDimension: 5,
+        orbitDistance: 15,
         orbitSpeed: 0.10,
         cubeRotationSpeed: -0.05,
         edgeColor: new THREE.Color(0x00ffff),
     }
 });
+game.createLevel({
+    time: 100000,
+    planetParams: {
+        cubeDimension: 6,
+        orbitDistance: 20,
+        orbitSpeed: 0.08,
+        cubeRotationSpeed: 0.10,
+        edgeColor: new THREE.Color(0xff00ff),
+    }
+});
+
 
 /* SET UP DISPLAY */
-
-
 const display = new Display(game);
 game.setDisplay(display);
 // const display = {
@@ -123,75 +123,105 @@ game.setDisplay(display);
 let timeDelta = 0;
 const clock = new THREE.Clock();
 
-	
 function animate() {
-    // hypercube rotates
     timeDelta = clock.getDelta();
-    game.update(timeDelta);
 
-    solarSystem.animate(timeDelta);
+    game.update(timeDelta); // update game state
+
+    solarSystem.animate(timeDelta); // update the solar system
     solarSystem.update();
 
-    camera.update();
-	renderer.render( scene,  camera.camera3D );
+    camera.update(); // update camera positioning
+ 	renderer.render( scene,  camera.camera3D );
 }
+
+/* CONTROLS */
 
 let forwardWalkStarted = false;
 let backwardWalkStarted = false;
 document.addEventListener("keydown", (event) => {
-    // pause on spacebar
-    if (event.code === "Space") {
-        solarSystem.toggleAnimation();
-    } if (event.key === 'p' || event.key === 'P') {
-        camera.togglePerspective();
-    } if (event.code === "ArrowRight") {
-        if (game.mouse) {
-            game.mouse.switchEdge(1);
-        }
-    } if (event.code === "ArrowLeft") {
-        if (game.mouse) {
-            game.mouse.switchEdge(-1);
-        }
-    } if (event.key === "w" && forwardWalkStarted == false) {
-        if(game.mouse) {
-            game.mouse.toggleWalking(1, true);
-        }
-        forwardWalkStarted = true;
-    } if (event.key === "s" && backwardWalkStarted == false) {
-        if(game.mouse) {
-            game.mouse.toggleWalking(-1, true);
-        }
-        backwardWalkStarted = true;
-    } if (event.key === 'v') {
-     //   hypercube.toggleVisibility();
-    } if (event.key === 'Enter') {
-        camera.follow(null, cameraInitialOffset, "reposition");
-        game.mouse.showMouse();
-    } if (event.key === 'Escape') {
-        camera.follow(null, null, "free");
-        game.mouse.showMouse();
-    } if (event.key === 'm') {
-        const relativeOffset = {
-            type: "relative",
-            vector: new THREE.Vector3(0, 1, 0)
-        }
-        if(game.mouse) {
-            camera.follow(game.mouse, relativeOffset);
-            game.mouse.hideMouse();
-        }
-    } if (event.key === '0') {
-        const offsetSun = new THREE.Vector3(0, 20, 0);
-        camera.follow(solarSystem.sun, offsetSun, "reposition");
-        game.mouse.showMouse();
-    } if (event.key === '1') {
-        const relativeOffset = { 
-            type: "relative",
-            vector: new THREE.Vector3(-2, 2, 2)
-        }
-        camera.follow(solarSystem.getPlanet(0), relativeOffset);
-        game.mouse.showMouse();
-    } if (event.key === 't') {
-        game.startLevel(0);
+    console.log(event)
+    switch (event.key) {
+        case "v":
+            //   hypercube.toggleVisibility();
+            break;
+
+        // Camera controls
+        case "p":
+            camera.togglePerspective(); // orthographic perspective
+            break;
+        case "m":
+            if (game.mouse) { // track mouse if it exists
+                camera.follow(game.mouse, {
+                    type: "relative",
+                    vector: new THREE.Vector3(0, 1, 0)
+                });
+                if(game.mouse) game.mouse.hideMouse();
+            }
+            break;
+        case "Esc":
+            camera.follow(null, null, "free"); // stop tracking on esc
+            if(game.mouse) game.mouse.showMouse();
+            break;
+        case "Enter":
+            camera.follow(null, cameraInitialOffset, "reposition"); // reset
+            if(game.mouse) game.mouse.showMouse();
+            break;
+        case "0":
+            const offsetSun = new THREE.Vector3(0, 20, 0);
+            camera.follow(solarSystem.sun, offsetSun, "reposition");
+            if(game.mouse) game.mouse.showMouse();
+            break;
+        case "1":
+            camera.follow(solarSystem.getPlanet(0), { 
+                type: "relative",
+                vector: new THREE.Vector3(-1.8, 0.7, 0.2)
+            });
+            if(game.mouse) game.mouse.showMouse();
+            break;
+        case "2":
+            camera.follow(solarSystem.getPlanet(1), { 
+                type: "relative",
+                vector: new THREE.Vector3(-2.5, 0.7, 0.5)
+            });
+            if(game.mouse) game.mouse.showMouse();
+            break;
+        case "3":
+            camera.follow(solarSystem.getPlanet(2), { 
+                type: "relative",
+                vector: new THREE.Vector3(-3, 0.8, 1)
+            });
+            if(game.mouse) game.mouse.showMouse();
+            break;
+        case "4":
+            camera.follow(solarSystem.getPlanet(3), { 
+                type: "relative",
+                vector: new THREE.Vector3(-4.3, 2, 2)
+            });
+            if(game.mouse) game.mouse.showMouse();
+            break;
+    
+        // Mouse controls
+        case "w":
+            if (game.mouse && !forwardWalkStarted) game.mouse.toggleWalking(1, true);
+            forwardWalkStarted = true;
+            break;
+        case "s":
+            if (game.mouse && !backwardWalkStarted) game.mouse.toggleWalking(-1, true);
+            backwardWalkStarted = true;
+            break;
+    }
+
+    switch(event.code) {
+        case "Space":
+            solarSystem.toggleAnimation();
+            break;
+        case "ArrowRight":
+            if (game.mouse) game.mouse.switchEdge(1);
+            break;
+        case "ArrowLeft":
+            if (game.mouse) game.mouse.switchEdge(-1);
+            break;
     }
 });
 

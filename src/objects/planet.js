@@ -1,10 +1,18 @@
 import * as THREE from "three";
 import { createRotationMatrixN, rotationMatrixY, translationMatrix } from "../utils";
+import MatrixN from "./matrixN";
 
 export default class Planet {
     constructor(
         hypercube,
-        animParams = { orbitDistance: 8, orbitSpeed: 0.25, cubeRotationSpeed: 0.15,  animate: true, orbitTime: 0, rotationTime: 0 }
+        animParams = {
+            orbitDistance: 8,
+            orbitSpeed: 0.25,
+            cubeRotationSpeed: 0.15,
+            animate: true,
+            orbitTime: 0,
+            rotationTime: 0,
+        }
     ) {
         this.animParams = animParams;
         this.hypercube = hypercube;
@@ -25,16 +33,24 @@ export default class Planet {
     rotate(timeDelta) {
         // get angle of rotation
         this.animParams.rotationTime += timeDelta;
-        const angle = 2 * this.animParams.cubeRotationSpeed * Math.PI * this.animParams.rotationTime;
-        
+        const angle =
+            2 *
+            this.animParams.cubeRotationSpeed *
+            Math.PI *
+            this.animParams.rotationTime;
+
         // rotate around a plane
-        let modelTransformND = createRotationMatrixN(
-            this.hypercube.dimension,
-            this.hypercube.dimension - 1,
-            this.hypercube.dimension - 2,
-            angle
-        ); 
+        let modelTransformND = this.#rotationMatrix(angle);
+        // let modelTransformND = new MatrixN(this.hypercube.dimension);
         
+        // const rotate = createRotationMatrixN(
+        //     this.hypercube.dimension,
+        //     this.hypercube.dimension - 1,
+        //     this.hypercube.dimension - 1-1,
+        //     angle
+        // )
+        // modelTransformND = modelTransformND.multiply(rotate);
+    
         // apply that transformation matrix to the tesseract
         this.hypercube.copyNDTransformation(modelTransformND);
     }
@@ -49,11 +65,27 @@ export default class Planet {
             translationMatrix(this.animParams.orbitDistance, 0, 0)
         );
         modelTransform3D.premultiply(
-            rotationMatrixY(this.animParams.orbitSpeed * this.animParams.orbitTime)
+            rotationMatrixY(
+                this.animParams.orbitSpeed * this.animParams.orbitTime
+            )
         );
 
         // apply transformation matrix to hypercube
         this.hypercube.copy3DTransformation(modelTransform3D);
+    }
+
+    #rotationMatrix(angle) {
+        let modelTransformND = new MatrixN(this.hypercube.dimension);
+        for(let i = 1; i <= this.hypercube.dimension-3; i++) {
+            const rotate = createRotationMatrixN(
+                this.hypercube.dimension,
+                this.hypercube.dimension - i,
+                this.hypercube.dimension - i-1,
+                angle
+            )
+            modelTransformND = modelTransformND.multiply(rotate);
+        }
+        return modelTransformND; 
     }
 
     #directionToOrigin() {

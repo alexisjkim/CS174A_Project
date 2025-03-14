@@ -18,8 +18,25 @@ export default class MatrixN {
       const result = new MatrixN(this.size);
       for (let i = 0; i < this.size; i++) {
         for (let j = 0; j < this.size; j++) {
+          result.elements[i][j] = 0;
           for (let k = 0; k < this.size; k++) {
             result.elements[i][j] += this.elements[i][k] * matrix.elements[k][j];
+          }
+        } 
+      }
+      return result;
+    }
+
+    premultiply(matrix) {
+      if (matrix.size !== this.size) {
+        throw new Error('Matrices must be the same size for multiplication');
+      }
+  
+      const result = new MatrixN(this.size);
+      for (let i = 0; i < this.size; i++) {
+        for (let j = 0; j < this.size; j++) {
+          for (let k = 0; k < this.size; k++) {
+            result.elements[i][j] += matrix.elements[i][k] * this.elements[k][j];
           }
         }
       }
