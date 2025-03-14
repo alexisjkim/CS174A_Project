@@ -21,7 +21,9 @@ export default class Cheese {
         this.mesh.position.copy(this.position);
 
         this.model = null;
+        this.sound = null;
         this.#loadModel(size);
+        this.#loadSound();
     }
 
     updateMesh() {
@@ -35,8 +37,28 @@ export default class Cheese {
 
     eat() {
         console.log("nom nom");
+
+        if (this.sound) {
+            this.sound.play();
+        }
+
         this.cheeseList.eatCheese(this);
         this.edge.removeCheese(this);
+    }
+
+    #loadSound() {
+        const listener = new THREE.AudioListener();
+        this.mesh.add(listener); // Attach to cheese
+
+        const audioLoader = new THREE.AudioLoader();
+        this.sound = new THREE.Audio(listener);
+
+        audioLoader.load('assets/cheese_sound.mp3', (buffer) => {
+            this.sound.setBuffer(buffer);
+            this.sound.setLoop(false); // Play only once
+            this.sound.setVolume(1.0); // Adjust volume
+            console.log("Sound loaded successfully!");
+        });
     }
 
     #loadModel(size, position = [0, 0, 0]) {

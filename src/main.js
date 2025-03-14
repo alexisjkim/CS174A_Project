@@ -111,15 +111,48 @@ game.createLevel({
 const cameraForMusic = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 const listener = new THREE.AudioListener();
 cameraForMusic.add(listener);
+
 const audioLoader = new THREE.AudioLoader();
 const backgroundMusic = new THREE.Audio(listener);
 
 audioLoader.load('assets/background_music.mp3', function(buffer) {
     backgroundMusic.setBuffer(buffer);
-    backgroundMusic.setLoop(true);  // Loop the music
-    backgroundMusic.setVolume(0.5); // Adjust volume (0.0 to 1.0)
-    backgroundMusic.play();
+    backgroundMusic.setLoop(true);
+    backgroundMusic.setVolume(0.5);
+    console.log("Music loaded. Press 'M' to play!");
 });
+
+
+function startMusic() {
+    if (backgroundMusic.isPlaying) return; // Prevent multiple starts
+
+    if (listener.context.state === 'suspended') {
+        listener.context.resume();
+    }
+
+    backgroundMusic.play();
+    console.log("Music started!");
+
+    // Remove event listener after first click
+    window.removeEventListener('click', startMusic);
+}
+
+function toggleMusic(event) {
+    if (event.key.toLowerCase() === 'q') {
+        if (backgroundMusic.isPlaying) {
+            backgroundMusic.stop();
+            console.log("Music stopped.");
+        } else {
+            backgroundMusic.play();
+            console.log("Music playing...");
+        }
+    }
+}
+
+window.addEventListener('click', startMusic);
+window.addEventListener('keydown', toggleMusic);
+
+
 
 /* SET UP DISPLAY */
 const display = new Display(game);
