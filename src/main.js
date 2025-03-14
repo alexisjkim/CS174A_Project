@@ -107,6 +107,19 @@ game.createLevel({
     }
 });
 
+/* Background music */
+const cameraForMusic = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+const listener = new THREE.AudioListener();
+cameraForMusic.add(listener);
+const audioLoader = new THREE.AudioLoader();
+const backgroundMusic = new THREE.Audio(listener);
+
+audioLoader.load('assets/background_music.mp3', function(buffer) {
+    backgroundMusic.setBuffer(buffer);
+    backgroundMusic.setLoop(true);  // Loop the music
+    backgroundMusic.setVolume(0.5); // Adjust volume (0.0 to 1.0)
+    backgroundMusic.play();
+});
 
 /* SET UP DISPLAY */
 const display = new Display(game);
