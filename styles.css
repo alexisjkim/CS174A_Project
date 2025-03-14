@@ -22,7 +22,7 @@ body {
 }
 
 /* show the home screen at first */
-#settings-screen, #game-screen, #selection-screen, #controls-screen, #finish-level-screen {
+#settings-screen, #game-screen, #selection-screen, #controls-screen, #finish-level-screen, #game-complete-screen {
     display: none;
 }
 

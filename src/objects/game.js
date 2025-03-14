@@ -62,10 +62,12 @@ export default class Game {
     }
 
     startLevel(levelNum) {
+        // invalid level number
         if(levelNum < 0 || levelNum >= this.levels.length) {
-            console.log("invalid level number");
+            console.log("invalid level number: %d", levelNum);
             return;
         }
+
         let level = this.levels[levelNum];
         if (!level) {
             console.error("Level data is missing at index:", levelNum);
@@ -111,11 +113,15 @@ export default class Game {
     }
 
     nextLevel() {
-        this.level += 1;
         this.mouse.hideMouse();
         this.mesh.remove(this.mouse);
         delete this.mouse;
-        this.startLevel(this.level);
+        this.level += 1;
+
+        // finished all levels
+        this.display.showScreen("game-complete-screen");
+        // if(this.level == this.levels.length) this.display.showScreen("game-complete-screen");
+        // else this.startLevel(this.level);
     }
 
     finishLevel() {

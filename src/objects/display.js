@@ -9,6 +9,7 @@ export default class Display {
         document.getElementById("settings-btn").addEventListener("click", () => this.showScreen("settings-screen"));
         document.getElementById("controls-btn").addEventListener("click", () => this.showScreen("controls-screen"));
         document.getElementById("next-level-btn").addEventListener("click", () => this.nextLevel());
+        document.getElementById("restart-btn").addEventListener("click", () => this.showScreen("home-screen"));
         document.querySelectorAll(".back-to-home").forEach(button => {
             button.addEventListener("click", () => this.showScreen("home-screen"));
         });
