@@ -26,6 +26,8 @@ export default class Hypercube {
         this.wireframeGeometry = new THREE.BufferGeometry();
         this.mesh = this.#createMesh(dimension, meshParams);
         this.showMesh = true; // else display wireframe
+
+        console.log(this)
     }
 
     // state only changes when update is explicitly called

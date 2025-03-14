@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { createStars, onWindowResize } from './utils';
+import { createStars, generateOrthonormalBasis, onWindowResize } from './utils';
 import Camera from './objects/camera';
 import SolarSystem from './objects/solarSystem';
 import Game from './objects/game';
@@ -39,7 +39,7 @@ camera.follow(null, cameraInitialOffset, "reposition"); // position camera at in
 // create cameras in each dimension
 const position6D = new VectorN(6, [0, 0, 0, 0, 0, 5]);
 const basis6D = new MatrixN(6);
-camera.setCameraND(6, position6D, basis6D);
+camera.setCameraND(6,position6D, basis6D);
 
 const position5D = new VectorN(5, [0, 0, 0, 0, 5]);
 const basis5D = new MatrixN(5);
@@ -48,8 +48,6 @@ camera.setCameraND(5, position5D, basis5D);
 const position4D = new VectorN(4, [0, 0, 0, 5]);
 const basis4D = new MatrixN(4);
 camera.setCameraND(4, position4D, basis4D);
-
-
 
 /* SET UP THE WORLD */
 
