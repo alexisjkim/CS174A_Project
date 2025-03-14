@@ -53,7 +53,7 @@ export default class Cheese {
         const audioLoader = new THREE.AudioLoader();
         this.sound = new THREE.Audio(listener);
 
-        audioLoader.load('assets/cheese_sound.mp3', (buffer) => {
+        audioLoader.load('assets/cheese_sound.wav', (buffer) => {
             this.sound.setBuffer(buffer);
             this.sound.setLoop(false); // Play only once
             this.sound.setVolume(1.0); // Adjust volume

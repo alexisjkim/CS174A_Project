@@ -16,6 +16,9 @@ export default class Game {
         this.levels = [];
         this.timer = null;
 
+        this.sound = null;
+        this.#loadSound();
+
     }
 
     setDisplay(display) {
@@ -70,6 +73,10 @@ export default class Game {
 
     finishLevel() {
         this.display.showScreen("finish-level-screen");
+
+        if (this.sound) {
+            this.sound.play();
+        }
     }
 
     // TEMP.. eventually be able to tune levels prob
@@ -95,5 +102,20 @@ export default class Game {
         const mesh = new THREE.Group();
         mesh.add(this.cheeseList.mesh);
         return mesh;
+    }
+
+    #loadSound() {
+        const listener = new THREE.AudioListener();
+        this.mesh.add(listener); // Attach to the mesh
+
+        const audioLoader = new THREE.AudioLoader();
+        this.sound = new THREE.Audio(listener);
+
+        audioLoader.load('assets/level_completed_sound.wav', (buffer) => {
+            this.sound.setBuffer(buffer);
+            this.sound.setLoop(false); // Play only once
+            this.sound.setVolume(1.0); // Adjust volume
+            console.log("Sound loaded successfully!");
+        });
     }
 }
