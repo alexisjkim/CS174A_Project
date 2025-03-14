@@ -46,7 +46,6 @@ export default class Camera {
 
             // use camera offset, either a global or relative value
             let offset;
-            console.log(this.offset);
             this.offset?.type === "relative"
                 ? (offset = this.#computeRelativeOffset(this.offset.vector, direction))
                 : (offset = this.offset);
@@ -67,7 +66,6 @@ export default class Camera {
                 this.controlMode === "reposition" &&
                 this.camera3D.position.distanceTo(cameraPosition) < 0.01
             ) {
-                console.log("repositioned");
                 this.controlMode = "free";
             }
         }

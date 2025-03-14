@@ -29,7 +29,7 @@ export default class Mouse {
     }
 
     // update actual mouse mesh
-    updateMesh() {
+    update() {
         this.mesh.position.copy(this.position);
     }
 
@@ -51,7 +51,6 @@ export default class Mouse {
         this.position = this.edge.getCoords(this.vertex, this.offset);
         this.direction = this.#directionToTargetVertex();
         this.edge.checkCheeses(this.position);
-        this.updateMesh();
     }
 
     // start/stop walking, can provide new speed

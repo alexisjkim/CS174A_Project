@@ -36,6 +36,7 @@ export default class Cheese {
     eat() {
         console.log("nom nom");
         this.cheeseList.eatCheese(this);
+        this.edge.removeCheese(this);
     }
 
     #loadModel(size, position = [0, 0, 0]) {

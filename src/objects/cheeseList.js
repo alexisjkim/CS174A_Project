@@ -21,6 +21,11 @@ export default class CheeseList {
         this.#updateCheeseDisplay();
     }
 
+    resetCheese() {
+        this.cheese = [];
+        this.#updateCheeseDisplay();
+    }
+
     eatCheese(cheese) {
         const index = this.cheeses.indexOf(cheese);
         if (index !== -1) {

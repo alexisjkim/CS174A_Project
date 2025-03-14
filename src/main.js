@@ -6,6 +6,8 @@ import Mouse from './objects/mouse';
 import Camera from './objects/camera';
 import CheeseList from './objects/cheeseList';
 import SolarSystem from './objects/solarSystem';
+import Game from './objects/game';
+import Display from './objects/display';
 
 
 /* SET UP THE SCENE */ 
@@ -49,28 +51,61 @@ scene.add(stars);
 const solarSystem = new SolarSystem(camera);
 scene.add(solarSystem.mesh);
 
-// add hypercubes to the system
-solarSystem.createPlanet();
-solarSystem.createPlanet({
-    orbitDistance: 13,
-    orbitSpeed: 0.15,
-    cubeRotationSpeed: -0.15,
-    edgeColor: new THREE.Color(0x00ffff),
-});
+// // add hypercubes to the system
+// solarSystem.createPlanet();
+// solarSystem.createPlanet({
+//     orbitDistance: 13,
+//     orbitSpeed: 0.15,
+//     cubeRotationSpeed: -0.15,
+//     edgeColor: new THREE.Color(0x00ffff),
+// });
 
-// add a single mouse, on the first hypercube
-const mouse = new Mouse(solarSystem.getPlanet(0).hypercube.randomEdge());
-scene.add(mouse.mesh);
+// // add a single mouse, on the first hypercube
+// const mouse = new Mouse(solarSystem.getPlanet(0).hypercube.randomEdge());
+// scene.add(mouse.mesh);
+
+
+const game = new Game(solarSystem, camera);
+scene.add(game.mesh);
+
+game.createLevel({
+    time: 100000,
+    planetParams: {
+        orbitDistance: 8,
+        orbitSpeed: 0.2,
+        cubeRotationSpeed: -0.15,
+        edgeColor: new THREE.Color(0xffff00),
+    }
+});
+game.createLevel({
+    time: 150000,
+    planetParams: {
+        orbitDistance: 10,
+        orbitSpeed: 0.16,
+        cubeRotationSpeed: 0.15,
+        edgeColor: new THREE.Color(0x00ff00),
+    }
+});
+game.createLevel({
+    time: 100000,
+    planetParams: {
+        orbitDistance: 13,
+        orbitSpeed: 0.10,
+        cubeRotationSpeed: -0.05,
+        edgeColor: new THREE.Color(0x00ffff),
+    }
+});
 
 /* SET UP DISPLAY */
 
-const display = {
-    cheeseEaten: document.getElementById('cheese-eaten'),
-    cheeseRemaining: document.getElementById('cheese-remaining')
 
-}
-solarSystem.linkCheeseDisplay(0, display);
+const display = new Display();
+// const display = {
+//     cheeseEaten: document.getElementById('cheese-eaten'),
+//     cheeseRemaining: document.getElementById('cheese-remaining')
 
+// }
+// solarSystem.linkCheeseDisplay(0, display);
 
 /* ANIMATION */
 
@@ -81,11 +116,11 @@ const clock = new THREE.Clock();
 function animate() {
     // hypercube rotates
     timeDelta = clock.getDelta();
+    game.update(timeDelta);
+
     solarSystem.animate(timeDelta);
     solarSystem.update();
 
-    // mouse updates position
-    mouse.walk(timeDelta);
     camera.update();
 	renderer.render( scene,  camera.camera3D );
 }
@@ -99,14 +134,22 @@ document.addEventListener("keydown", (event) => {
     } if (event.key === 'p' || event.key === 'P') {
         camera.togglePerspective();
     } if (event.code === "ArrowRight") {
-        mouse.switchEdge(1);
+        if (game.mouse) {
+            game.mouse.switchEdge(1);
+        }
     } if (event.code === "ArrowLeft") {
-        mouse.switchEdge(-1);
+        if (game.mouse) {
+            game.mouse.switchEdge(-1);
+        }
     } if (event.key === "w" && forwardWalkStarted == false) {
-        mouse.toggleWalking(1, true);
+        if(game.mouse) {
+            game.mouse.toggleWalking(1, true);
+        }
         forwardWalkStarted = true;
     } if (event.key === "s" && backwardWalkStarted == false) {
-        mouse.toggleWalking(-1, true);
+        if(game.mouse) {
+            game.mouse.toggleWalking(-1, true);
+        }
         backwardWalkStarted = true;
     } if (event.key === 'v') {
      //   hypercube.toggleVisibility();
@@ -119,7 +162,9 @@ document.addEventListener("keydown", (event) => {
             type: "relative",
             vector: new THREE.Vector3(0, 1, 0)
         }
-        camera.follow(mouse, relativeOffset);
+        if(game.mouse) {
+            camera.follow(game.mouse, relativeOffset);
+        }
     } if (event.key === '0') {
         const offsetSun = new THREE.Vector3(0, 20, 0);
         camera.follow(solarSystem.sun, offsetSun, "reposition");
@@ -129,6 +174,8 @@ document.addEventListener("keydown", (event) => {
             vector: new THREE.Vector3(-5, 0, 0)
         }
         camera.follow(solarSystem.getPlanet(0), relativeOffset);
+    } if (event.key === 't') {
+        game.startLevel(0);
     }
 });
 
@@ -137,13 +184,13 @@ document.addEventListener("keyup", (event) => {
     // pause on spacebar
     if (event.key === 'w') {
         forwardWalkStarted = false;
-        if(backwardWalkStarted == false) {
-            mouse.toggleWalking(1, false);
+        if(backwardWalkStarted == false && game.mouse) {
+            game.mouse.toggleWalking(1, false);
         }
     } if (event.key === 's') {
         backwardWalkStarted = false;
-        if(forwardWalkStarted == false) {
-            mouse.toggleWalking(-1, false);
+        if(forwardWalkStarted == false && game.mouse) {
+            game.mouse.toggleWalking(-1, false);
         }
     }
 });

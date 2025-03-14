@@ -47,10 +47,7 @@ export default class Planet {
     }
 
     createCheese(numCheese) {
-        for (let i = 0; i < numCheese; i++) {
-            const edge = this.hypercube.randomEdge();
-            this.cheeseList.addCheese(new Cheese(this.cheeseList, edge));
-        }
+        
     }
 
     #directionToOrigin() {

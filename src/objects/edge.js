@@ -44,6 +44,10 @@ export default class Edge {
         // if more than 1 cheese, maybe offset their positions?
     }
 
+    removeCheese(cheese) {
+        this.cheeses = this.cheeses.filter(c => c !== cheese);
+    }
+
     checkCheeses(position) {
         this.cheeses = this.cheeses.filter(cheese => {
             if (cheese.eatable(position)) {

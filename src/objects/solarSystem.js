@@ -74,6 +74,8 @@ export default class SolarSystem {
         planet.createCheese(numCheese);
         this.planets.push(planet);
         this.mesh.add(planet.mesh);
+        
+        return planet;
     }
 
     getPlanet(planetNumber) {
