@@ -58,9 +58,6 @@ export default class Game {
 
     }
 
-    linkDisplay() {
-    }
-
     startLevel(levelNum) {
         // invalid level number
         if(levelNum < 0 || levelNum >= this.levels.length) {

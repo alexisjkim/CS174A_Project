@@ -203,7 +203,8 @@ function createRotationMatrixN(n, i, j, theta) {
 // create cylinder along an edge
 function createCylinder(start, end, radius, color) {
     const direction = new THREE.Vector3().subVectors(end, start);
-    const length = direction.length();
+    let length = direction.length();
+    if (length == 0) length = 0.1;
 
     // Create a cylinder along the Y-axis
     const geometry = new THREE.CylinderGeometry(radius, radius, length, 16);

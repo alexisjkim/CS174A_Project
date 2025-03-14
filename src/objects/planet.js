@@ -67,7 +67,7 @@ export default class Planet {
 
     #rotationMatrix(angle) {
         let modelTransformND = new MatrixN(this.hypercube.dimension);
-        for(let i = 1; i <= this.hypercube.dimension-1; i++) {
+        for(let i = 1; i <= this.hypercube.dimension-2; i++) {
             const rotate = createRotationMatrixN(
                 this.hypercube.dimension,
                 this.hypercube.dimension - i,
