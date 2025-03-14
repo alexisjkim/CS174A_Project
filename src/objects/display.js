@@ -1,5 +1,7 @@
 export default class Display {
-    constructor() {
+    constructor(game) {
+        this.game = game;
+
         /* Link Buttons */
 
         // navigate to screens
@@ -19,6 +21,11 @@ export default class Display {
     
         // Show the selected screen
         document.getElementById(screenId).style.display = "flex";
+
+        // game screen
+        if(screenId == "game-screen") {
+            this.game.startLevel(1);
+        }
     }
     
     // Event listeners for navigation
