@@ -37,6 +37,24 @@ export default class Game {
         if(this.timer)  {
             this.timer -= timeDelta;
         }
+
+        this.updateTimerDisplay();
+    }
+
+    updateTimerDisplay() {
+        const timerElement = document.getElementById("timer-display");
+
+        if (this.timer) {
+            timerElement.style.display = 'block'; // make the timer visible
+            if (timerElement) {
+                timerElement.innerText = `Time Left: ${Math.ceil(this.timer)}`; // round up time to integer
+            }
+        }
+
+        else {
+            timerElement.style.display = 'none'; // hide the timer
+        }
+
     }
 
     linkDisplay() {
@@ -57,7 +75,8 @@ export default class Game {
         }
 
         // start timer
-        this.timer = level.startTime;
+        this.timer = level.time;
+        console.log("")
 
         // have camera follow this planet
         const offset = { 
@@ -77,6 +96,9 @@ export default class Game {
         if (this.sound) {
             this.sound.play();
         }
+
+        this.timer = null;
+        
     }
 
     // TEMP.. eventually be able to tune levels prob
