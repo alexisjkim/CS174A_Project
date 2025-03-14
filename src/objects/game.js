@@ -119,9 +119,8 @@ export default class Game {
         this.level += 1;
 
         // finished all levels
-        this.display.showScreen("game-complete-screen");
-        // if(this.level == this.levels.length) this.display.showScreen("game-complete-screen");
-        // else this.startLevel(this.level);
+        if(this.level == this.levels.length) this.display.showScreen("game-complete-screen");
+        else this.startLevel(this.level);
     }
 
     finishLevel() {
