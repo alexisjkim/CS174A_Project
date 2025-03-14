@@ -205,6 +205,10 @@ button:hover {
     border-radius: 5px;
 }
 
+.sandbox-item span {
+    background-color:rgba(79, 87, 91, 0.5);
+}
+
 /* Back Button at the Bottom */
 #game-btn {
     position: absolute;

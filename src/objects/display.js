@@ -17,6 +17,9 @@ export default class Display {
             button.addEventListener("click", () => this.showScreen("home-screen"));
         });
 
+        this.dimensionDisplay = document.getElementById("dimension-value");
+        this.rotationDisplay = document.getElementById("rotation-value");
+        this.sizeDisplay = document.getElementById("size-value");
         document.getElementById("sandbox-btn").addEventListener("click", () => this.startSandbox());
         document.getElementById("game-btn").addEventListener("click", () => this.restartGame());
         document.getElementById("inc-dimension").addEventListener("click", () => this.changeDimension(1));
@@ -58,16 +61,21 @@ export default class Display {
     changeDimension(change) {
         console.log(change);
         this.sandbox.changeDimension(this.sandbox.dimension + change)
+        this.dimensionDisplay.textContent = this.sandbox.dimension;
     }
 
     changeRotation(change) {
         console.log(change);
         this.sandbox.changeRotation(this.sandbox.animParams.rotationNumber + change)
+        this.rotationDisplay.textContent = this.sandbox.animParams.rotationNumber;
+
     }
 
     changeSize(change) {
         console.log(change);
         this.sandbox.changeEdgeLength(this.sandbox.params.edgeLength + change)
+        this.sizeDisplay.textContent = this.sandbox.params.edgeLength;
+
     }
     
     
