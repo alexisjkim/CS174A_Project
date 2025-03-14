@@ -1,9 +1,14 @@
 export default class Display {
     constructor() {
-        // Link homescreen
+        /* Link Buttons */
+
+        // navigate to screens
         document.getElementById("start-btn").addEventListener("click", () => this.showScreen("game-screen"));
         document.getElementById("settings-btn").addEventListener("click", () => this.showScreen("settings-screen"));
-        document.getElementById("home-btn").addEventListener("click", () => this.showScreen("home-screen"));
+        document.getElementById("controls-btn").addEventListener("click", () => this.showScreen("controls-screen"));
+        document.querySelectorAll(".back-to-home").forEach(button => {
+            button.addEventListener("click", () => this.showScreen("home-screen"));
+        });
     }
 
     showScreen(screenId) {
