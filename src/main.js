@@ -281,6 +281,10 @@ document.addEventListener("keyup", (event) => {
         if(forwardWalkStarted == false && game.mouse) {
             game.mouse.toggleWalking(-1, false);
         }
+    } if (event.key == 'a') {
+        if (game.mouse) game.mouse.switchEdge(-1);
+    } if (event.key == 'd') {
+        if (game.mouse) game.mouse.switchEdge(1);
     }
 });
 
