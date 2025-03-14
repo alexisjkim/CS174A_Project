@@ -8,7 +8,7 @@ import VectorN from './objects/vectorN';
 import MatrixN from './objects/matrixN';
 
 
-/* SET UP THE SCENE */ 
+/* SET UP THE SCENE */
 
 // scene
 const scene = new THREE.Scene();
