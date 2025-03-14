@@ -41,16 +41,7 @@ export default class Planet {
 
         // rotate around a plane
         let modelTransformND = this.#rotationMatrix(angle);
-        // let modelTransformND = new MatrixN(this.hypercube.dimension);
-        
-        // const rotate = createRotationMatrixN(
-        //     this.hypercube.dimension,
-        //     this.hypercube.dimension - 1,
-        //     this.hypercube.dimension - 1-1,
-        //     angle
-        // )
-        // modelTransformND = modelTransformND.multiply(rotate);
-    
+                
         // apply that transformation matrix to the tesseract
         this.hypercube.copyNDTransformation(modelTransformND);
     }
@@ -76,7 +67,7 @@ export default class Planet {
 
     #rotationMatrix(angle) {
         let modelTransformND = new MatrixN(this.hypercube.dimension);
-        for(let i = 1; i <= this.hypercube.dimension-3; i++) {
+        for(let i = 1; i <= this.hypercube.dimension-1; i++) {
             const rotate = createRotationMatrixN(
                 this.hypercube.dimension,
                 this.hypercube.dimension - i,

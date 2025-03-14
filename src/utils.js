@@ -52,20 +52,19 @@ function projectNDto3D(vectorN, camera) {
     }
 
     // transform vectr based on camera's position in n-dimensions
+    const forward = cameraND.forward.clone().normalize();
     const transformedVector = vectorN.clone().subtract(cameraND.position);
 
     // apply inverse camera basis
     let inverseCameraBasis = cameraND.basis.clone().invert();
+    if (!inverseCameraBasis) {
+        console.error("camera basis inversion failed!");
+        return new THREE.Vector3(0, 0, 0);
+    }
     transformedVector.applyMatrixN(inverseCameraBasis); // Custom function for N-D matrix-vector multiplication
 
-     // define a forward vector as first column of basis
-    let forwardVector = new VectorN(N);
-    for (let i = 0; i < N; i++) {
-        forwardVector.set(i, cameraND.basis.get(i, N-1));
-    }
-
     // compute depth along the forward direction, by using the vectors projection onto the forward vector
-    let depthComponent = transformedVector.dot(forwardVector);
+    let depthComponent = transformedVector.dot(forward);
     let scaleFactor = 1; // Default scale for orthographic
 
     if (cameraND.usePerspective) {
@@ -84,6 +83,83 @@ function projectNDto3D(vectorN, camera) {
     return projectedVector;
 }
 
+// create ONB using gram schmidt process
+function gramSchmidt(basis) {
+    let orthogonalized = [];
+
+    for (let i = 0; i < basis.length; i++) {
+        let v = basis[i];
+
+        // Subtract the projection of v onto all previous orthogonal vectors
+        for (let j = 0; j < i; j++) {
+            let projCoeff = v.dot(orthogonalized[j]);
+            let proj = orthogonalized[j].clone().scale(projCoeff);
+            v.subtract(proj);
+        }
+
+        // Add the orthogonalized vector to the list
+        orthogonalized.push(v);
+    }
+
+    // Normalize all vectors to make them unit vectors
+    return orthogonalized.map(v => v.normalize());
+}
+
+function generateBasis(forward, up) {
+    let n = forward.size; // Dimension of the vectors
+    let basis = [];
+
+    // Normalize the forward vector as the first basis vector
+    let e1 = forward.normalize();
+    basis.push(e1);
+
+    // Make sure the up vector is not parallel to forward
+    let e2 = up.subtract(e1.clone().scale(e1.dot(up))).normalize();
+    basis.push(e2);
+
+    // Fill in additional vectors using arbitrary perpendicular choices
+    for (let i = 2; i < n; i++) {
+        let randomVec = VectorN.random(n); // Assume a function that generates a random vector
+        let newVec = randomVec;
+
+        // Remove components along existing basis vectors
+        for (let j = 0; j < basis.length; j++) {
+            newVec.subtract(basis[j].clone().scale(basis[j].dot(newVec)));
+        }
+
+        basis.push(newVec.normalize());
+    }
+    return basis;
+}
+
+function generateOrthonormalBasis(forward) {
+    let N = forward.size;
+
+    // Step 1: Find an appropriate 'up' vector that is not parallel to 'forward'
+    let up = VectorN.random(N, true); // Generate a random unit vector
+
+    // Ensure 'up' is not too close to 'forward' (to avoid near-zero cross products)
+    while (Math.abs(forward.dot(up)) > 0.9) {
+        up = VectorN.random(N, true); // Regenerate if too parallel
+    }
+
+    // Step 2: Construct an initial basis
+    let basis = generateBasis(forward, up);
+
+    // Step 3: Apply Gram-Schmidt process to make it orthonormal
+    const arrayONB = gramSchmidt(basis);
+    const matrixONB = new MatrixN(N);
+
+    // Fill the matrix with basis vectors as columns
+    for (let i = 0; i < N; i++) {
+        let vector = arrayONB[i];
+        for (let j = 0; j < N; j++) {
+            matrixONB.set(j, i, vector.get(j));
+        }
+    }
+
+    return matrixONB;
+}
 
 function translationMatrix(tx, ty, tz) {
     return new THREE.Matrix4().set(
@@ -228,6 +304,7 @@ export {
     createAxes,
     onWindowResize,
     createRotationMatrixN,
+    generateOrthonormalBasis
 };
 
 

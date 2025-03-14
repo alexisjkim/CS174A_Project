@@ -1,5 +1,7 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+import { generateOrthonormalBasis } from "../utils";
+import MatrixN from "./matrixN";
 
 export default class Camera {
     // create a camera, controls, and manually initialize 4D camera params
@@ -95,25 +97,26 @@ export default class Camera {
 
     setCameraND(N, position, basis, depth = 1, perspective = true) {
         let index = this.camerasND.findIndex(camera => camera.dimension === N);
+        const forward = position.clone().normalize();
+        
+        // const basis = new MatrixN(N);
+        console.log(basis);
+
+        const cameraND = {
+            dimension: N,
+            position: position,
+            forward: forward,
+            basis: basis,
+            depth: depth,
+            usePerspective: perspective,
+        };
 
         if (index !== -1) {
             // replace with new camera if that dimension camera exists
-            this.camerasND[index] = {
-                dimension: N,
-                position: position,
-                basis: basis,
-                depth: depth,
-                usePerspective: perspective,
-            };
+            this.camerasND[index] = cameraND
         } else {
             // otherwise add a new camera for this dimension
-            this.camerasND.push({
-                dimension: N,
-                position: position,
-                basis: basis,
-                depth: depth,
-                usePerspective: perspective,
-            });
+            this.camerasND.push(cameraND);
         }
     }
 

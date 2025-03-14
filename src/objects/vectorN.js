@@ -51,6 +51,11 @@ export default class VectorN {
       return dotProduct;
     }
 
+    scale(scalar) {
+      this.elements = this.elements.map(c => c * scalar);
+      return this;
+    }
+
     subtract(vector) {
       if(vector.size !== this.size) {
         console.error("trying to subtract two vectors of different size");
@@ -62,4 +67,22 @@ export default class VectorN {
       }
       return this;
     }
+
+    normalize() {
+      const magnitude = Math.sqrt(this.elements.reduce((sum, component) => sum + component * component, 0));
+
+      if (magnitude === 0) {
+        return this;
+      }
+
+      this.elements = this.elements.map(component => component / magnitude);
+      
+      return this;
+    } 
+
+  static random(size, normalized = false) {
+    let components = Array.from({ length: size }, () => Math.random() * 2 - 1); // Random values in range [-1,1]
+    let vector = new VectorN(size, components);
+    return normalized ? vector.normalize() : vector;
+  }
 }

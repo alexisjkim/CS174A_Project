@@ -46,6 +46,10 @@ export default class MatrixN {
     get(i, j) {
       return this.elements[i][j];
     }
+
+    set(i, j, value) {
+      this.elements[i][j] = value;
+    }
   
     // Copy the current matrix to another MatrixN instance
     clone() {
