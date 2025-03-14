@@ -49,7 +49,7 @@ export default class Vertex {
     }
 
     // customize color of an edge, call with no params to reset to original color
-    setColor(color = this.baseColor, glowColor = "0x000000", glowIntensity = 0) {
+    setColor(color = this.baseColor, glowColor = 0x000000, glowIntensity = 0) {
         this.mesh.material.color.set(color);
         this.mesh.material.emissive.set(glowColor);
         this.mesh.material.emissiveIntensity = glowIntensity; 
