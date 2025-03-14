@@ -60,7 +60,8 @@ button:hover {
 }
 
 #cheese-remaining,
-#cheese-eaten {
+#cheese-eaten,
+#timer-display {
     position: absolute;
     top: 20px;
     left: 20px;
@@ -69,6 +70,7 @@ button:hover {
     background-color: rgba(0, 0, 0, 0.5);
     padding: 10px;
     border-radius: 5px;
+    display: none;
 }
 
 #cheese-eaten {

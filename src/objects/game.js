@@ -17,6 +17,9 @@ export default class Game {
         this.levels = [];
         this.timer = null;
 
+        this.sound = null;
+        this.#loadSound();
+
     }
 
     setDisplay(display) {
@@ -33,6 +36,24 @@ export default class Game {
         if(this.timer)  {
             this.timer -= timeDelta;
         }
+
+        this.updateTimerDisplay();
+    }
+
+    updateTimerDisplay() {
+        const timerElement = document.getElementById("timer-display");
+
+        if (this.timer) {
+            timerElement.style.display = 'block'; // make the timer visible
+            if (timerElement) {
+                timerElement.innerText = `Time Left: ${Math.ceil(this.timer)}`; // round up time to integer
+            }
+        }
+
+        else {
+            timerElement.style.display = 'none'; // hide the timer
+        }
+
     }
 
     linkDisplay() {
@@ -70,7 +91,8 @@ export default class Game {
         console.log(this.cheeseList.length);
 
         // start timer
-        this.timer = level.startTime;
+        this.timer = level.time;
+        console.log("")
 
         // have camera follow this planet
         const offset = { 
@@ -90,6 +112,13 @@ export default class Game {
 
     finishLevel() {
         this.display.showScreen("finish-level-screen");
+
+        if (this.sound) {
+            this.sound.play();
+        }
+
+        this.timer = null;
+        
     }
 
     // TEMP.. eventually be able to tune levels prob
@@ -115,5 +144,20 @@ export default class Game {
         const mesh = new THREE.Group();
         mesh.add(this.cheeseList.mesh);
         return mesh;
+    }
+
+    #loadSound() {
+        const listener = new THREE.AudioListener();
+        this.mesh.add(listener); // Attach to the mesh
+
+        const audioLoader = new THREE.AudioLoader();
+        this.sound = new THREE.Audio(listener);
+
+        audioLoader.load('assets/level_completed_sound.wav', (buffer) => {
+            this.sound.setBuffer(buffer);
+            this.sound.setLoop(false); // Play only once
+            this.sound.setVolume(1.0); // Adjust volume
+            console.log("Sound loaded successfully!");
+        });
     }
 }
