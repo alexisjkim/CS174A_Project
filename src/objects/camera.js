@@ -102,6 +102,7 @@ export default class Camera {
             this.camera3D.controls3D.enabled = true;
             this.camera3D.controls3D.target.copy(mouse.mesh.position);
             this.camera3D.controls3D.enablePan = false; // Disable panning
+            
         }
     }
 
@@ -117,8 +118,9 @@ export default class Camera {
         // right vector (k? from class)
         const right = new THREE.Vector3().crossVectors(up, direction).normalize();
 
+        // if direction is almost parallel to up
         if (Math.abs(direction.dot(up)) > 0.999) {
-            right.set(1, 0, 0); // Default right vector if direction is nearly vertical
+            right.set(0, 0, 1); // Default right vector if direction is nearly vertical
         }
 
         // new up vector(j?)

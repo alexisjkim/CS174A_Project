@@ -17,7 +17,7 @@ export default class Mouse {
         
         // temp mouse, sphere
         const geometry = new THREE.SphereGeometry(0.1, 32, 32);
-        const material = new THREE.MeshBasicMaterial({ color: "white", transparent: false, opacity: 1 });
+        const material = new THREE.MeshBasicMaterial({ color: "white", transparent: true, opacity: 0 });
         this.mesh = new THREE.Mesh(geometry, material);
         this.mesh.position.copy(this.position);
 
@@ -77,6 +77,16 @@ export default class Mouse {
         this.offset = 0;
         this.edge = edge;
         this.#highlightCurrentPosition();
+    }
+
+    hideMouse() {
+        this.mesh.material.visible = false;
+        if (this.model) this.model.visible = false;
+    }
+
+    showMouse() {
+        this.mesh.material.visible = true;
+        if (this.model) this.model.visible = true;
     }
 
     #directionToTargetVertex() {

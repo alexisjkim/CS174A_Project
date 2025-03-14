@@ -155,8 +155,10 @@ document.addEventListener("keydown", (event) => {
      //   hypercube.toggleVisibility();
     } if (event.key === 'Enter') {
         camera.follow(null, cameraInitialOffset, "reposition");
+        mouse.showMouse();
     } if (event.key === 'Escape') {
         camera.follow(null, null, "free");
+        mouse.showMouse();
     } if (event.key === 'm') {
         const relativeOffset = {
             type: "relative",
@@ -164,16 +166,19 @@ document.addEventListener("keydown", (event) => {
         }
         if(game.mouse) {
             camera.follow(game.mouse, relativeOffset);
+            mouse.hideMouse();
         }
     } if (event.key === '0') {
         const offsetSun = new THREE.Vector3(0, 20, 0);
         camera.follow(solarSystem.sun, offsetSun, "reposition");
+        mouse.showMouse();
     } if (event.key === '1') {
         const relativeOffset = { 
             type: "relative",
             vector: new THREE.Vector3(-5, 0, 0)
         }
         camera.follow(solarSystem.getPlanet(0), relativeOffset);
+        mouse.showMouse();
     } if (event.key === 't') {
         game.startLevel(0);
     }
