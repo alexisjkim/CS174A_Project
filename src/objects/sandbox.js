@@ -27,9 +27,9 @@ export default class Sandbox {
 
         const groundGeometry = new THREE.PlaneGeometry(100, 100);
         const groundMaterial = new THREE.MeshStandardMaterial({
-            color: 0x91d179,
+            color: 0x93ff91,
             side: THREE.DoubleSide,
-        }); // Grey color
+        }); 
         const ground = new THREE.Mesh(groundGeometry, groundMaterial);
         ground.rotation.x = -Math.PI / 2;
         ground.position.set(0, -5, 0);
@@ -103,6 +103,23 @@ export default class Sandbox {
             );
             this.mesh.add(this.hypercube.mesh);
         }
+    }
+
+    changeColor() {
+            this.params.edgeColor = this.getRandomColorHex();
+            this.params.vertexColor = this.getRandomColorHex();
+            this.mesh.remove(this.hypercube.mesh);
+            console.log("new cube", this.dimension, this.camera, this.params);
+            this.hypercube = new Hypercube(
+                this.dimension,
+                this.camera,
+                this.params
+            );
+            this.mesh.add(this.hypercube.mesh);
+    }
+
+    getRandomColorHex() {
+        return 0x000000 + Math.floor(Math.random() * 0xFFFFFF);
     }
 
     rotate(timeDelta) {

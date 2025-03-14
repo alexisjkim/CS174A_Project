@@ -28,6 +28,7 @@ export default class Display {
         document.getElementById("dec-rotation").addEventListener("click", () => this.changeRotation(-1));
         document.getElementById("inc-size").addEventListener("click", () => this.changeSize(1));
         document.getElementById("dec-size").addEventListener("click", () => this.changeSize(-1));
+        document.getElementById("change-color").addEventListener("click", () => this.changeColor());
     }
 
     showScreen(screenId) {
@@ -43,7 +44,6 @@ export default class Display {
     startSandbox() {
         this.playGame = false;
         console.log("toggled")
-
         this.showScreen("sandbox-screen");
         this.unloadGame();
         this.loadSandbox();
@@ -77,6 +77,11 @@ export default class Display {
         this.sizeDisplay.textContent = this.sandbox.params.edgeLength;
 
     }
+
+    changeColor() {
+        this.sandbox.changeColor();
+    }
+    
     
     
     // Event listeners for navigation
