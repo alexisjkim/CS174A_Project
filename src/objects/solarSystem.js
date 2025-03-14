@@ -6,7 +6,7 @@ export default class SolarSystem {
     constructor(camera) {
         this.camera = camera;
         this.planets = [];
-        this.sun = this.#createSun();
+        this.sun = this.#createSun();        
         this.mesh = this.#createMesh();
     }
 
@@ -98,6 +98,8 @@ export default class SolarSystem {
     }
 
     #createSun(radius = 1, baseColor = 0xffffff) {
+        const otherLights = new THREE.Group();
+
         const textureLoader = new THREE.TextureLoader();
         const sunTexture = textureLoader.load('assets/sun_texture.png');
 
@@ -108,14 +110,24 @@ export default class SolarSystem {
             emissiveIntensity: 1,
         });
 
-        const sunMesh = new THREE.Mesh(sunGeometry, sunMaterial);
-        const sunLight = new THREE.PointLight(0xffaa00, 1, 10, 2);
+        const sun = new THREE.Mesh(sunGeometry, sunMaterial);
+        const ambientLight = new THREE.AmbientLight(0x505050);  // Soft white light
+        const pointLight = new THREE.PointLight(0xffffff, 100, 100);
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+        
+        pointLight.position.set(5, 5, 5);
+        directionalLight.position.set(0.5, .0, 1.0).normalize();
 
+        otherLights.add(ambientLight);
+        otherLights.add(pointLight);
+        otherLights.add(directionalLight);
+    
         return {
             position: new THREE.Vector3(0, 0, 0),
             animate: true,
             time: 0,
-            mesh: new THREE.Mesh(sunGeometry, sunMaterial),
+            mesh: sun,
+            otherLights: otherLights,
             light: new THREE.PointLight(0xffffff, 1, 0, 1),
         };
     }
@@ -143,6 +155,7 @@ export default class SolarSystem {
     #createMesh() {
         const mesh = new THREE.Group();
         mesh.add(this.sun.mesh);
+        mesh.add(this.sun.otherLights)
         mesh.add(this.sun.light);
         return mesh;
     }

@@ -1,6 +1,10 @@
 export default class Display {
-    constructor(game) {
+    constructor(game, solarSystem, sandbox, scene, playGame) {
         this.game = game;
+        this.solarSystem = solarSystem;
+        this.sandbox = sandbox;
+        this.scene = scene;
+        this.playGame = playGame;
 
         /* Link Buttons */
 
@@ -12,6 +16,13 @@ export default class Display {
         document.querySelectorAll(".back-to-home").forEach(button => {
             button.addEventListener("click", () => this.showScreen("home-screen"));
         });
+
+        document.getElementById("sandbox-btn").addEventListener("click", () => this.startSandbox());
+        document.getElementById("game-btn").addEventListener("click", () => this.restartGame());
+        document.getElementById("inc-dimension").addEventListener("click", () => this.changeDimension(1));
+        document.getElementById("dec-dimension").addEventListener("click", () => this.changeDimension(-1));
+        document.getElementById("inc-rotation").addEventListener("click", () => this.changeRotation(1));
+        document.getElementById("dec-rotation").addEventListener("click", () => this.changeRotation(-1));
     }
 
     showScreen(screenId) {
@@ -23,6 +34,35 @@ export default class Display {
         // Show the selected screen
         document.getElementById(screenId).style.display = "flex";
     }
+
+    startSandbox() {
+        this.playGame = false;
+        console.log("toggled")
+
+        this.showScreen("sandbox-screen");
+        this.unloadGame();
+        this.loadSandbox();
+    }
+
+    restartGame() {
+        this.playGame = true;
+        console.log("toggled")
+
+        this.showScreen("home-screen");
+        this.unloadSandbox();
+        this.loadGame();
+    }
+
+    changeDimension(change) {
+        console.log(change);
+        this.sandbox.changeDimension(this.sandbox.dimension + change)
+    }
+
+    changeRotation(change) {
+        console.log(change);
+        this.sandbox.changeRotation(this.sandbox.animParams.rotationNumber + change)
+    }
+    
     
     // Event listeners for navigation
     startGame() {
@@ -35,8 +75,25 @@ export default class Display {
         this.game.nextLevel();
     }
 
+    loadGame() {
+        this.scene.add(this.game.mesh);
+        this.scene.add(this.solarSystem.mesh);
+    }
+    unloadGame() {
+        this.scene.remove(this.game.mesh);
+        this.scene.remove(this.solarSystem.mesh);
+    }
+    loadSandbox() {
+        console.log("start sandbox");
+        this.scene.add(this.sandbox.mesh);
+    }
+    unloadSandbox() {
+        console.log("remove sandbox", this.sandbox)
+        this.scene.remove(this.sandbox.mesh);
+    }x 
+
     // lostLevel() {
     //     this.showScreen("lost-level-screen");
-    //     this.game.lostLevel();
+    //     this.this.game.lostLevel();
     // }
 }

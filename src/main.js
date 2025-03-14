@@ -6,29 +6,19 @@ import Game from './objects/game';
 import Display from './objects/display';
 import VectorN from './objects/vectorN';
 import MatrixN from './objects/matrixN';
+import Sandbox from './objects/Sandbox';
 
 
 /* SET UP THE SCENE */
 
 // scene
 const scene = new THREE.Scene();
-const renderer = new THREE.WebGLRenderer();
+const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize( window.innerWidth, window.innerHeight );
 renderer.setAnimationLoop( animate );
+renderer.shadowMap.enabled = true; // Enable shadows
+renderer.shadowMap.type = THREE.PCFSoftShadowMap; // Soft shadows
 document.body.appendChild( renderer.domElement );
-
-
-// lights
-const pointLight = new THREE.PointLight(0xffffff, 100, 100);
-pointLight.position.set(5, 5, 5); // Position the light
-scene.add(pointLight);
-
-const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-directionalLight.position.set(0.5, .0, 1.0).normalize();
-scene.add(directionalLight);
-
-const ambientLight = new THREE.AmbientLight(0x505050);  // Soft white light
-scene.add(ambientLight);
 
 
 // camera
@@ -49,61 +39,6 @@ const position4D = new VectorN(4, [0, 0, 0, 5]);
 const basis4D = new MatrixN(4);
 camera.setCameraND(4, position4D, basis4D);
 
-/* SET UP THE WORLD */
-
-// sky
-const stars = createStars(1.5, 0xffffff, 3000, 400, 900);
-scene.add(stars);
-
-// create solar system
-const solarSystem = new SolarSystem(camera);
-scene.add(solarSystem.mesh);
-
-// create the game
-const game = new Game(solarSystem, camera);
-scene.add(game.mesh);
-
-/* ADD GAME LEVELS */
-game.createLevel({
-    time: 40,
-    planetParams: {
-        cubeDimension: 3,
-        edgeLength: 1,
-        orbitDistance: 8,
-        orbitSpeed: 0.2,
-        cubeRotationSpeed: -0.15,
-        edgeColor: new THREE.Color(0xffff00),
-    }
-});
-game.createLevel({
-    time: 50,
-    planetParams: {
-        orbitDistance: 12,
-        orbitSpeed: 0.16,
-        cubeRotationSpeed: 0.15,
-        edgeColor: new THREE.Color(0x00ff00),
-    }
-});
-game.createLevel({
-    time: 60,
-    planetParams: {
-        cubeDimension: 5,
-        orbitDistance: 15,
-        orbitSpeed: 0.10,
-        cubeRotationSpeed: -0.05,
-        edgeColor: new THREE.Color(0x00ffff),
-    }
-});
-game.createLevel({
-    time: 70,
-    planetParams: {
-        cubeDimension: 6,
-        orbitDistance: 20,
-        orbitSpeed: 0.08,
-        cubeRotationSpeed: 0.10,
-        edgeColor: new THREE.Color(0xff00ff),
-    }
-});
 
 /* Background music */
 const cameraForMusic = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -150,31 +85,116 @@ function toggleMusic(event) {
 window.addEventListener('click', startMusic);
 window.addEventListener('keydown', toggleMusic);
 
+/* SET UP THE WORLD */
 
+// sky
+
+const stars = createStars(1.5, 0xffffff, 3000, 400, 900);
+scene.add(stars);
+
+// create solar system
+const solarSystem = new SolarSystem(camera);
+
+// create the game
+const game = new Game(solarSystem, camera);
+
+/* ADD GAME LEVELS */
+game.createLevel({
+    time: 40,
+    planetParams: {
+        cubeDimension: 3,
+        edgeLength: 1,
+        orbitDistance: 8,
+        orbitSpeed: 0.2,
+        cubeRotationSpeed: -0.15,
+        edgeColor: new THREE.Color(0xffff00),
+    }
+});
+game.createLevel({
+    time: 50,
+    planetParams: {
+        orbitDistance: 12,
+        orbitSpeed: 0.16,
+        cubeRotationSpeed: 0.15,
+        edgeColor: new THREE.Color(0x00ff00),
+    }
+});
+game.createLevel({
+    time: 60,
+    planetParams: {
+        cubeDimension: 5,
+        orbitDistance: 15,
+        orbitSpeed: 0.10,
+        cubeRotationSpeed: -0.05,
+        edgeColor: new THREE.Color(0x00ffff),
+    }
+});
+game.createLevel({
+    time: 70,
+    planetParams: {
+        cubeDimension: 6,
+        orbitDistance: 20,
+        orbitSpeed: 0.08,
+        cubeRotationSpeed: 0.10,
+        edgeColor: new THREE.Color(0xff00ff),
+    }
+});
+
+const sandbox = new Sandbox(camera);
+
+let playGame = true;
 
 /* SET UP DISPLAY */
-const display = new Display(game);
+const display = new Display(game, solarSystem, sandbox, scene, playGame);
 game.setDisplay(display);
-// const display = {
-//     cheeseEaten: document.getElementById('cheese-eaten'),
-//     cheeseRemaining: document.getElementById('cheese-remaining')
-
-// }
-// solarSystem.linkCheeseDisplay(0, display);
+function loadGame() {
+    scene.add(game.mesh);
+    scene.add(solarSystem.mesh);
+}
+function unloadGame() {
+    scene.remove(game.mesh);
+    scene.remove(solarSystem.mesh);
+}
+function loadSandbox() {
+    scene.add(sandbox.mesh);
+}
+function unloadSandbox() {
+    scene.remove(sandbox.mesh);
+}
+loadGame();
 
 /* ANIMATION */
 
 let timeDelta = 0;
 const clock = new THREE.Clock();
 
+function toggleMode() {
+    timeDelta = 0;
+    playGame = !playGame;
+    if(playGame) {
+        loadGame();
+        unloadSandbox();
+    } else {
+        loadSandbox();
+        camera.follow(sandbox.hypercube, new THREE.Vector3(0, -1, 1), "free");
+        unloadGame();
+    }
+}
+
 function animate() {
     timeDelta = clock.getDelta();
 
-    game.update(timeDelta); // update game state
+    if(display.playGame) {  
+        game.update(timeDelta); // update game state
 
-    solarSystem.animate(timeDelta); // update the solar system
-    solarSystem.update();
+        solarSystem.animate(timeDelta); // update the solar system
+        solarSystem.update();    
+    } else {
+        console.log("updating");
+        sandbox.update(timeDelta);
+    }
 
+    
     camera.update(); // update camera positioning
  	renderer.render( scene,  camera.camera3D );
 }
@@ -252,6 +272,12 @@ document.addEventListener("keydown", (event) => {
         case "s":
             if (game.mouse && !backwardWalkStarted) game.mouse.toggleWalking(-1, true);
             backwardWalkStarted = true;
+            break;
+
+
+        case "=":
+            console.log("toggle");
+            toggleMode();
             break;
     }
 
