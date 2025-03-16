@@ -1,19 +1,23 @@
 import * as THREE from "three";
 import Planet from "./planet";
 import Hypercube from "./hypercube";
+import { createStars } from "../utils";
 
 export default class SolarSystem {
     constructor(camera) {
         this.camera = camera;
         this.planets = [];
-        this.sun = this.#createSun();        
+        this.sun = this.#createSun();
+        this.stars = createStars(1.5, 0xffffff, 3000, 400, 900);        
         this.mesh = this.#createMesh();
     }
 
     animate(timeDelta) {
         this.planets.forEach((planet) => {
-            if (planet.animParams.animate) {
+            if (planet.animParams.rotate) {
                 planet.rotate(timeDelta);
+            }
+            if (planet.animParams.orbit) {
                 planet.orbit(timeDelta);
             }
         });
@@ -31,16 +35,61 @@ export default class SolarSystem {
     toggleAnimation(object) {
         if(!object) {
             // toggle all animations
-            this.planets.forEach((planet) => {
-                planet.animParams.animate = !planet.animParams.animate;
-            })
             this.sun.animate = !this.sun.animate;
+            this.planets.forEach((planet) => {
+                planet.animParams.rotate = !planet.animParams.rotate;
+                planet.animParams.orbit = !planet.animParams.orbit;
+            })
+        } else if (object === this.sun) {
+            this.sun.animate = !this.sun.animate;
+        } else {
+            this.planets.forEach((planet) => {
+                if(object === planet) planet.animParams.rotate = !planet.animParams.rotate;
+                if(object === planet) planet.animParams.orbit = !planet.animParams.orbit;
+            })
         }
-        // TODO toggle each one individually
+    }
+    toggleRotation(object) {
+        if(!object) {
+            // toggle all animations
+            this.planets.forEach((planet) => {
+                planet.animParams.rotate = !planet.animParams.rotate;
+            })
+        }
+        else {
+            this.planets.forEach((planet) => {
+                if(object === planet) planet.animParams.rotate = !planet.animParams.rotate;
+            })
+        }
+    }
+    toggleOrbit(object) {
+        if(!object) {
+            // toggle all animations
+            this.planets.forEach((planet) => {
+                planet.animParams.orbit = !planet.animParams.orbit;
+            })
+        }
+        else {
+            this.planets.forEach((planet) => {
+                if(object === planet) planet.animParams.orbit = !planet.animParams.orbit;
+            })
+        }
+    }
+    toggleVisibility(object) {
+        if(!object) {
+            this.planets.forEach((planet) => {
+                planet.hypercube.toggleVisibility();
+            })
+        } else {
+            this.planets.forEach((planet) => {
+                if(object === planet) planet.hypercube.toggleVisibility();
+            })
+        }
     }
 
     createPlanet({
-        animate = true,
+        rotate = true,
+        orbit = true,
         rotationTime = 0,
         orbitTime = 0,
         orbitDistance = 10,
@@ -65,7 +114,8 @@ export default class SolarSystem {
             orbitDistance,
             orbitSpeed,
             cubeRotationSpeed,
-            animate,
+            rotate,
+            orbit,
             orbitTime,
             rotationTime,
         });
@@ -97,11 +147,12 @@ export default class SolarSystem {
         }
     }
 
-    #createSun(radius = 1, baseColor = 0xffffff) {
+    #createSun(radius = 1) {
         const otherLights = new THREE.Group();
 
         const textureLoader = new THREE.TextureLoader();
         const sunTexture = textureLoader.load('assets/sun_texture.png');
+        sunTexture.wrapS = THREE.RepeatWrapping;
 
         const sunGeometry = new THREE.SphereGeometry(radius, 64, 64);
         const sunMaterial = new THREE.MeshStandardMaterial({
@@ -155,8 +206,9 @@ export default class SolarSystem {
     #createMesh() {
         const mesh = new THREE.Group();
         mesh.add(this.sun.mesh);
-        mesh.add(this.sun.otherLights)
         mesh.add(this.sun.light);
+        mesh.add(this.sun.otherLights)
+        mesh.add(this.stars);
         return mesh;
     }
 }

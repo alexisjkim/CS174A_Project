@@ -7,19 +7,20 @@ export default class Game {
     constructor(solarSystem, camera, display) {
         // objects
         this.camera = camera;
+        this.display = display;
         this.solarSystem = solarSystem;
-        this.mouse = null;
         this.cheeseList = new CheeseList(this);
-        this.mesh = this.#createMesh();
-        this.level = 0;
-
+        this.mouse = null;
+        
         // game state
+        this.level = 0;
         this.levels = [];
         this.timer = null;
-
+        
         this.sound = null;
+        
+        this.mesh = this.#createMesh();
         this.#loadSound();
-
     }
 
     setDisplay(display) {

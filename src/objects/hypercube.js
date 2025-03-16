@@ -22,12 +22,12 @@ export default class Hypercube {
         this.dimension = dimension;
         this.transformationMatrixND = new MatrixN(dimension);
         this.transformationMatrix3D = new THREE.Matrix4();
-        
-        this.wireframeGeometry = new THREE.BufferGeometry();
-        this.mesh = this.#createMesh(dimension, meshParams);
-        this.showMesh = true; // else display wireframe
 
-        console.log(this)
+        
+        this.mesh = this.#createMesh(dimension, meshParams);
+        this.wireframe = this.#createWireframe();
+
+        this.showMesh = true; // else display wireframe
     }
 
     // state only changes when update is explicitly called
@@ -41,6 +41,11 @@ export default class Hypercube {
         this.edges.forEach(edge => {
             edge.updateMesh(this.camera);
         })
+        
+        // update wireframe if its visible
+        if(!this.showMesh) {
+            this.#updateWireframe();
+        }
     }
     
     /* Apply transformations to the hypercube in 4D and 3D */
@@ -62,10 +67,10 @@ export default class Hypercube {
         // toggle between mesh and wireframe
         if(this.showMesh) {
             this.mesh.visible = true;
-            this.wireframe.visible = false;
+            this.wireframe.mesh.visible = false;
         } else {
             this.mesh.visible = false;
-            this.wireframe.visible = true;
+            this.wireframe.mesh.visible = true;
         }
         this.showMesh = !this.showMesh;
     }
@@ -86,10 +91,8 @@ export default class Hypercube {
         const mesh = new THREE.Group(); // collection of cylinders and spheres
         const { edgeLength, edgeRadius, edgeColor, vertexRadius, vertexColor } = params;
         
-        // create N*N vertices, represented with N-d Vectors
+        // create N*N vertices, represented with N-d Vectors, connect them with edges
         this.#generateVertices(dimension, edgeLength, vertexRadius, vertexColor, mesh);
-
-        // add edges between connected vertices
         this.#generateEdges(dimension, this.vertices, edgeRadius, edgeColor, mesh);
 
         return mesh;
@@ -148,4 +151,47 @@ export default class Hypercube {
             }
         }
     }   
+
+    #updateWireframe() {
+        const positions = [];
+        this.edges.forEach(edge => {
+            const vertexA = edge.vertex1.projectedVector;
+            const vertexB = edge.vertex2.projectedVector;
+    
+            positions.push(vertexA.x, vertexA.y, vertexA.z);
+            positions.push(vertexB.x, vertexB.y, vertexB.z);
+        });
+
+        const positionAttribute = new THREE.BufferAttribute(new Float32Array(positions), 3);
+        positionAttribute.setUsage(THREE.DynamicDrawUsage);
+        this.wireframe.mesh.geometry.setAttribute('position', positionAttribute);
+        this.wireframe.mesh.geometry.attributes.position.needsUpdate = true;
+        console.log("Wireframe updating:", positions.length);
+    }
+
+    #createWireframe() {
+        const wireframe_geometry = new THREE.BufferGeometry();
+        const lineMaterial = new THREE.LineBasicMaterial({
+            color: 0x00ff00, // Green color
+            linewidth: 8,
+            linejoin: "round",
+        });
+        const positions = [];
+        this.edges.forEach(edge => {
+            const vertexA = edge.vertex1.projectedVector;
+            const vertexB = edge.vertex2.projectedVector;
+    
+            positions.push(vertexA.x, vertexA.y, vertexA.z);
+            positions.push(vertexB.x, vertexB.y, vertexB.z);
+        });
+        wireframe_geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(positions), 3));
+        wireframe_geometry.attributes.position.needsUpdate = true;
+        const wireframe_mesh = new THREE.LineSegments(wireframe_geometry, lineMaterial);
+        wireframe_mesh.matrixAutoUpdate = false;
+        
+        return {
+            geometry: wireframe_geometry,
+            mesh: wireframe_mesh,
+        };
+    }
 }

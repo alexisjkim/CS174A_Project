@@ -9,7 +9,8 @@ export default class Planet {
             orbitDistance: 8,
             orbitSpeed: 0.25,
             cubeRotationSpeed: 0.15,
-            animate: true,
+            rotate: true,
+            orbit: true,
             orbitTime: 0,
             rotationTime: 0,
         }
@@ -88,6 +89,7 @@ export default class Planet {
     #createMesh() {
         const mesh = new THREE.Group();
         mesh.add(this.hypercube.mesh);
+        mesh.add(this.hypercube.wireframe.mesh);
         return mesh;
     }
 }

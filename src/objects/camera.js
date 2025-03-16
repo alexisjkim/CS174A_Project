@@ -98,9 +98,6 @@ export default class Camera {
     setCameraND(N, position, basis, depth = 1, perspective = true) {
         let index = this.camerasND.findIndex(camera => camera.dimension === N);
         const forward = position.clone().normalize();
-        
-        // const basis = new MatrixN(N);
-        console.log(basis);
 
         const cameraND = {
             dimension: N,
